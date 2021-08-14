@@ -2,9 +2,9 @@
   <q-page class="flex flex-center">
     <q-card flat class="text-center">
       <div class="text-title text-center">
-        Pay a<q-icon name="bolt" size="md" />lightning network invoice with <q-icon name="img:/assets/hive.svg" size="md" />Hive or <q-icon name="img:/assets/hbd.svg" size="md" />HBD
+        Pay a<q-icon name="bolt" size="md" />lightning network invoice with <q-icon name="img:statics/hive.svg" size="md" />Hive or <q-icon name="img:statics/hbd.svg" size="md" />HBD
       </div>
-      <q-input v-model="invoice" label="Lightning network invoice" style="min-width:250px" class="text-center" @enter="checkInvoice()" @change="checkInvoice()"/>
+      <q-input v-model="invoice" label="Lightning network invoice" style="min-width:250px; max-width: 90%" class="text-center" @enter="checkInvoice()" @change="checkInvoice()"/>
       <div v-if="invoiceValid && decodedInvoice" class="bg-green shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <q-btn glossy @click="sendKeychain(costHive,'HIVE')">Pay {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" /></q-btn>
@@ -72,7 +72,7 @@ export default {
     },
     checkInvoice () {
       if (this.invoiceValid) {
-        console.log(invoice.decode(this.invoice))
+        console.info(invoice.decode(this.invoice))
         this.decodedInvoice = invoice.decode(this.invoice)
       } else {
         this.decodedInvoice = null
