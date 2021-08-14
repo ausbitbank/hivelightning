@@ -1,0 +1,102 @@
+<template>
+  <q-page class="flex flex-center">
+    <q-card flat class="text-center">
+      <div class="text-title text-center">
+        Pay a lightning network invoice with Hive or HBD
+      </div>
+      <q-input v-model="invoice" label="Enter lightning network invoice" style="min-width:500px" class="text-center" @change="checkInvoice()" />
+      <div v-if="invoiceValid && decodedInvoice" class="bg-green">
+        Valid invoice for {{ decodedInvoice.satoshis }} satoshis (${{ costUsd }} USD)<br />
+        <q-btn @click="sendKeychain(costHive,'HIVE')">Pay {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" /></q-btn>
+        <q-btn @click="sendKeychain(costHbd,'HBD')">Pay {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" /></q-btn>
+      </div>
+      <div v-if="prices && false">
+        <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd) }}
+        <b>Hive:</b> ${{ prices.hive.usd }}
+        <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd }}
+      </div>
+    </q-card>
+  </q-page>
+</template>
+
+<script>
+// import invoice from '@node-lightning/invoice'
+import invoice from 'bolt11'
+import { keychain } from '@hiveio/keychain'
+export default {
+  name: 'PageIndex',
+  data () {
+    return {
+      invoice: '',
+      decodedInvoice: null,
+      prices: null,
+      overChargePercent: 0
+    }
+  },
+  computed: {
+    invoiceValid: function () {
+      if (this.invoice.startsWith('lnbc')) {
+        return true
+      } else {
+        return false
+      }
+    },
+    costHive: function () {
+      if (this.prices && this.decodedInvoice) {
+        const hiveBtc = this.prices.hive.btc
+        const sats = this.decodedInvoice.satoshis * 0.00000001
+        return (sats / hiveBtc).toFixed(3)
+      } else { return null }
+    },
+    costHbd: function () {
+      if (this.prices && this.decodedInvoice) {
+        const hbdBtc = this.prices.hive_dollar.btc
+        const sats = this.decodedInvoice.satoshis * 0.00000001
+        return (sats / hbdBtc).toFixed(3)
+      } else { return null }
+    },
+    costUsd: function () {
+      if (this.prices && this.decodedInvoice) {
+        const sats = this.decodedInvoice.satoshis * 0.00000001
+        return (sats * this.prices.bitcoin.usd).toFixed(2)
+      } else { return null }
+    }
+  },
+  methods: {
+    getPrices () {
+      this.prices = null
+      this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
+        .then((response) => { this.prices = response.data })
+        .catch(() => { console.log('Failed to load data from coingecko api') })
+    },
+    checkInvoice () {
+      if (this.invoiceValid) {
+        console.log(invoice.decode(this.invoice))
+        this.decodedInvoice = invoice.decode(this.invoice)
+      } else {
+        this.decodedInvoice = null
+      }
+    },
+    tidyNumber (x) {
+      if (x) {
+        const parts = x.toString().split('.')
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        return parts.join('.')
+      } else {
+        return null
+      }
+    },
+    async sendKeychain (amount, token) {
+      const to = 'hivehydra'
+      const user = ''
+      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, to, amount, this.invoice, token)
+      if (success) { this.$q.notify('Success!') }
+      if (cancel) { this.$q.notify('Cancelled by user') }
+      if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
+    }
+  },
+  mounted () {
+    this.getPrices()
+  }
+}
+</script>
