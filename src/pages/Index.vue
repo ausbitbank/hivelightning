@@ -2,20 +2,20 @@
   <q-page class="flex flex-center">
     <q-card flat class="text-center">
       <div class="text-title text-center">
-        Pay a<q-icon name="bolt" size="md" />lightning network invoice with <q-icon name="img:statics/hive.svg" size="md" />Hive or <q-icon name="img:statics/hbd.svg" size="md" />HBD
+        Pay a lightning network invoice with Hive or HBD
       </div>
       <q-input v-model="invoice" label="Lightning network invoice" style="min-width:250px; max-width: 90%" class="text-center" @enter="checkInvoice()" @change="checkInvoice()"/>
-      <div v-if="invoiceValid && decodedInvoice" class="bg-green shadow-1 q-pa-sm">
+      <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
-        <q-btn glossy @click="sendKeychain(costHive,'HIVE')">Pay {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" /></q-btn>
-        <q-btn glossy @click="sendKeychain(costHbd,'HBD')">Pay {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" /></q-btn>
-      </div>
-      <div v-if="prices && false">
-        <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd) }}
-        <b>Hive:</b> ${{ prices.hive.usd }}
-        <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd }}
-      </div>
+        <q-btn no-caps lossy @click="sendKeychain(costHive,'HIVE')">{{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" /></q-btn>
+        <q-btn no-caps glossy @click="sendKeychain(costHbd,'HBD')">{{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" /></q-btn>
+      </q-card>
     </q-card>
+    <q-footer v-if="prices" class="text-center">
+      <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd) }}
+      <b>Hive:</b> ${{ prices.hive.usd }}
+      <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd }}
+    </q-footer>
   </q-page>
 </template>
 
@@ -91,7 +91,7 @@ export default {
       const to = 'hivehydra'
       const user = ''
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, to, amount, this.invoice, token)
-      if (success) { this.$q.notify('Success!') }
+      if (success) { this.$q.notify('Payment sent!') }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     }
