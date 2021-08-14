@@ -30,7 +30,7 @@ export default {
       invoice: '',
       decodedInvoice: null,
       prices: null,
-      overChargePercent: 0
+      overChargeMultiplier: 1.1 // 10% overcharge, change is returned
     }
   },
   computed: {
@@ -45,14 +45,16 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hiveBtc = this.prices.hive.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        return (sats / hiveBtc).toFixed(3)
+        const cost = (sats / hiveBtc) * this.overChargeMultiplier
+        return (cost).toFixed(3)
       } else { return null }
     },
     costHbd: function () {
       if (this.prices && this.decodedInvoice) {
         const hbdBtc = this.prices.hive_dollar.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        return (sats / hbdBtc).toFixed(3)
+        const cost = (sats / hbdBtc) * this.overChargeMultiplier
+        return (cost).toFixed(3)
       } else { return null }
     },
     costUsd: function () {
