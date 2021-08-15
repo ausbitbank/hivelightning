@@ -16,8 +16,20 @@
       </div>
       <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
-        <q-btn no-caps lossy @click="sendKeychain(costHive,'HIVE')">{{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" /></q-btn>
-        <q-btn no-caps glossy @click="sendKeychain(costHbd,'HBD')">{{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" /></q-btn>
+        <q-btn no-caps glossy>
+          {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
+          <q-popup-proxy>
+            <q-btn no-caps glossy label="Hive Keychain" @click="sendKeychain(costHive,'HIVE')"><q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" class="q-ml-sm" /></q-btn>
+            <q-btn no-caps glossy label="Hive Signer" @click="sendHivesigner(costHive,'HIVE')"><q-icon name="img:hivesigner.png" title="Pay with Hive Signer" class="q-ml-sm" /></q-btn>
+          </q-popup-proxy>
+        </q-btn>
+        <q-btn no-caps glossy>
+          {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
+          <q-popup-proxy>
+            <q-btn no-caps glossy label="Hive Keychain" @click="sendKeychain(costHbd,'HBD')"><q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" class="q-ml-sm" /></q-btn>
+            <q-btn no-caps glossy label="Hive Signer" @click="sendHivesigner(costHbd,'HBD')"><q-icon name="img:hivesigner.png" title="Pay with Hive Signer" class="q-ml-sm" /></q-btn>
+          </q-popup-proxy>
+        </q-btn>
       </q-card>
     </q-card>
     <q-footer v-if="prices" class="text-center">
@@ -39,7 +51,8 @@ export default {
       decodedInvoice: null,
       prices: null,
       overChargeSats: 50 * 0.00000001,
-      overChargeMultiplier: 1.15 // 15% overcharge, change is returned
+      overChargeMultiplier: 1.15, // 15% overcharge, change is returned
+      to: 'hivehydra'
     }
   },
   computed: {
@@ -99,12 +112,14 @@ export default {
       }
     },
     async sendKeychain (amount, token) {
-      const to = 'hivehydra'
       const user = ''
-      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, to, amount, this.invoice, token)
+      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, amount, this.invoice, token)
       if (success) { this.$q.notify('Payment sent!') }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
+    },
+    sendHivesigner (amount, token) {
+      window.location.href = 'https://www.hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
     }
   },
   mounted () {
