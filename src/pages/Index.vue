@@ -5,7 +5,7 @@
         Pay a lightning network invoice with Hive or HBD
       </div>
 
-      <div class="q-pa-md" style="max-width: 90%">
+      <div class="q-pa-md" style="max-width: 90%; margin:auto">
         <q-input
           v-model="invoice"
           label="Lightning network invoice"
