@@ -81,6 +81,7 @@ export default {
         .catch(() => { console.log('Failed to load data from coingecko api') })
     },
     checkInvoice () {
+      if (this.invoice.startsWith('lightning:')) { this.invoice = this.invoice.slice(10) }
       if (this.invoiceValid) {
         console.info(invoice.decode(this.invoice))
         this.decodedInvoice = invoice.decode(this.invoice)
