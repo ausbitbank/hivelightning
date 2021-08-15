@@ -4,7 +4,16 @@
       <div class="text-title text-center">
         Pay a lightning network invoice with Hive or HBD
       </div>
-      <q-input v-model="invoice" label="Lightning network invoice" style="min-width:250px; max-width: 90%" class="text-center" @enter="checkInvoice()" @change="checkInvoice()"/>
+
+      <div class="q-pa-md" style="max-width: 90%">
+        <q-input
+          v-model="invoice"
+          label="Lightning network invoice"
+          filled
+          autogrow
+          class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
+        />
+      </div>
       <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <q-btn no-caps lossy @click="sendKeychain(costHive,'HIVE')">{{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" /></q-btn>
