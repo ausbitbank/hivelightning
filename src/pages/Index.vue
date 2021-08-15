@@ -52,7 +52,7 @@ export default {
       prices: null,
       overChargeSats: 50 * 0.00000001,
       overChargeMultiplier: 1.15, // 15% overcharge, change is returned
-      to: 'hivehydra'
+      to: 'v4vapp'
     }
   },
   computed: {
