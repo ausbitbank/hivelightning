@@ -19,15 +19,19 @@
         <q-btn no-caps glossy>
           {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
+            <q-card>
             <q-btn no-caps glossy label="Hive Keychain" @click="sendKeychain(costHive,'HIVE')"><q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" class="q-ml-sm" /></q-btn>
             <q-btn no-caps glossy label="Hive Signer" @click="sendHivesigner(costHive,'HIVE')"><q-icon name="img:hivesigner.png" title="Pay with Hive Signer" class="q-ml-sm" /></q-btn>
+            </q-card>
           </q-popup-proxy>
         </q-btn>
         <q-btn no-caps glossy>
           {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
           <q-popup-proxy>
+            <q-card>
             <q-btn no-caps glossy label="Hive Keychain" @click="sendKeychain(costHbd,'HBD')"><q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" class="q-ml-sm" /></q-btn>
             <q-btn no-caps glossy label="Hive Signer" @click="sendHivesigner(costHbd,'HBD')"><q-icon name="img:hivesigner.png" title="Pay with Hive Signer" class="q-ml-sm" /></q-btn>
+            </q-card>
           </q-popup-proxy>
         </q-btn>
       </q-card>
