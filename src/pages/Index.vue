@@ -33,9 +33,9 @@
       </q-card>
     </q-card>
     <q-footer v-if="prices" class="text-center">
-      <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd) }}
-      <b>Hive:</b> ${{ prices.hive.usd }}
-      <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd }}
+      <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
+      <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
+      <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd.toFixed(2) }}
     </q-footer>
   </q-page>
 </template>
@@ -52,7 +52,7 @@ export default {
       prices: null,
       overChargeSats: 50 * 0.00000001,
       overChargeMultiplier: 1.15, // 15% overcharge, change is returned
-      to: 'hivehydra'
+      to: 'v4vapp'
     }
   },
   computed: {
@@ -119,7 +119,7 @@ export default {
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },
     sendHivesigner (amount, token) {
-      window.location.href = 'https://www.hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      window.location.href = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
     }
   },
   mounted () {
