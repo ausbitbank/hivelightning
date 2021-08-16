@@ -72,7 +72,7 @@ export default {
         const hiveBtc = this.prices.hive.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
         const cost = ((sats + this.overChargeSats) / hiveBtc) * this.overChargeMultiplier
-        return (cost).toFixed(3)
+        return (cost).toFixed(1)
       } else { return null }
     },
     costHbd: function () {
@@ -80,7 +80,7 @@ export default {
         const hbdBtc = this.prices.hive_dollar.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
         const cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
-        return (cost).toFixed(3)
+        return (cost).toFixed(1)
       } else { return null }
     },
     costUsd: function () {
