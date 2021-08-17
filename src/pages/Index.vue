@@ -1,6 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <q-card flat class="text-center">
+      <q-img src="hivelightning.png" style="margin:auto" />
       <div class="text-title text-center">
         Pay a lightning network invoice with Hive or HBD
       </div>
@@ -31,8 +32,24 @@
           {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
-            <q-btn no-caps glossy label="Hive Keychain" @click="sendKeychain(costHive,'HIVE')"><q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" class="q-ml-sm" /></q-btn>
-            <q-btn no-caps glossy label="Hive Signer" @click="sendHivesigner(costHive,'HIVE')"><q-icon name="img:hivesigner.png" title="Pay with Hive Signer" class="q-ml-sm" /></q-btn>
+              <q-list dense class="text-bold">
+                <q-item clickable @click="sendKeychain(costHive,'HIVE')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Keychain
+                  </q-item-section>
+                </q-item>
+                <q-item clickable @click="sendHivesigner(costHive,'HIVE')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Signer
+                  </q-item-section>
+                </q-item>
+              </q-list>
             </q-card>
           </q-popup-proxy>
         </q-btn>
@@ -40,8 +57,24 @@
           {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
-            <q-btn no-caps glossy label="Hive Keychain" @click="sendKeychain(costHbd,'HBD')"><q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" class="q-ml-sm" /></q-btn>
-            <q-btn no-caps glossy label="Hive Signer" @click="sendHivesigner(costHbd,'HBD')"><q-icon name="img:hivesigner.png" title="Pay with Hive Signer" class="q-ml-sm" /></q-btn>
+              <q-list dense class="text-bold">
+                <q-item clickable @click="sendKeychain(costHbd,'HBD')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Keychain
+                  </q-item-section>
+                </q-item>
+                <q-item clickable @click="sendHivesigner(costHbd,'HBD')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Signer
+                  </q-item-section>
+                </q-item>
+              </q-list>
             </q-card>
           </q-popup-proxy>
         </q-btn>
@@ -130,7 +163,7 @@ export default {
     },
     async sendKeychain (amount, token) {
       const user = ''
-      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, amount, this.invoice, token)
+      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice, token)
       if (success) { this.$q.notify('Payment sent!') }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
