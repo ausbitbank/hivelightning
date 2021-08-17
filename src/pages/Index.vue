@@ -130,7 +130,7 @@ export default {
     },
     async sendKeychain (amount, token) {
       const user = ''
-      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, amount, this.invoice, token)
+      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice, token)
       if (success) { this.$q.notify('Payment sent!') }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
