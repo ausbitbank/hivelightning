@@ -4,7 +4,6 @@
       <div class="text-title text-center">
         Pay a lightning network invoice with Hive or HBD
       </div>
-
       <div class="q-pa-md" style="max-width: 90%; margin:auto">
         <q-input
           v-model="invoice"
@@ -16,7 +15,19 @@
       </div>
       <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
-        <q-btn no-caps glossy>
+        <div v-if="serviceStatus" class="text-caption">Exchange Status:
+          <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
+          <span v-else-if="serviceStatus.closed_for_maintenance === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
+          <q-btn icon="info" color="blue" flat dense size="sm" title="Show full exchange settings">
+            <q-popup-proxy>
+              <q-card flat class="text-center q-pa-sm">
+                <div class="text-title text-bold">Exchange Settings for {{ to }}</div>
+                <div v-for="line in Object.keys(serviceStatus)" :key="line">{{ line}} : {{ serviceStatus[line] }}</div>
+              </q-card>
+            </q-popup-proxy>
+          </q-btn>
+        </div>
+        <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
           {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
@@ -25,7 +36,7 @@
             </q-card>
           </q-popup-proxy>
         </q-btn>
-        <q-btn no-caps glossy>
+        <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
           {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
@@ -47,6 +58,7 @@
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
+import hive from '@hiveio/hive-js'
 export default {
   name: 'PageIndex',
   data () {
@@ -56,7 +68,8 @@ export default {
       prices: null,
       overChargeSats: 50 * 0.00000001,
       overChargeMultiplier: 1.15, // 15% overcharge, change is returned
-      to: 'v4vapp'
+      to: 'v4vapp',
+      serviceStatus: null
     }
   },
   computed: {
@@ -72,7 +85,7 @@ export default {
         const hiveBtc = this.prices.hive.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
         const cost = ((sats + this.overChargeSats) / hiveBtc) * this.overChargeMultiplier
-        return (cost).toFixed(3)
+        return (cost).toFixed(1)
       } else { return null }
     },
     costHbd: function () {
@@ -80,7 +93,7 @@ export default {
         const hbdBtc = this.prices.hive_dollar.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
         const cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
-        return (cost).toFixed(3)
+        return (cost).toFixed(1)
       } else { return null }
     },
     costUsd: function () {
@@ -124,10 +137,19 @@ export default {
     },
     sendHivesigner (amount, token) {
       window.location.href = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+    },
+    getServiceStatus (account) {
+      hive.api.getAccountsAsync([account])
+        .then((response) => {
+          this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
+        })
+        .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
     }
   },
   mounted () {
     this.getPrices()
+    if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
+    this.getServiceStatus(this.to)
   }
 }
 </script>

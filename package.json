@@ -10,6 +10,7 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@hiveio/hive-js": "^2.0.4",
     "@hiveio/keychain": "^1.0.4",
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
