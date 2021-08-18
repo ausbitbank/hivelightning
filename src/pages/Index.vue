@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex flex-center">
-    <q-card flat class="text-center">
+    <q-card flat class="text-center q-pa-md">
       <q-img src="hivelightning.png" style="margin:auto" />
       <div class="text-title text-center">
         Pay a lightning network invoice with Hive or HBD
@@ -84,6 +84,7 @@
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
       <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd.toFixed(2) }}
+      <q-btn @click="$q.dark.toggle()" :title="$q.dark.isActive ? 'Dark':'Light'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" />
     </q-footer>
   </q-page>
 </template>
