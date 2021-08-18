@@ -84,7 +84,7 @@
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
       <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd.toFixed(2) }}
-      <q-btn @click="$q.dark.toggle()" :title="$q.dark.isActive ? 'Dark':'Light'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" />
+      <q-btn @click="$q.dark.toggle()" :title="$q.dark.isActive ? 'Change to light mode':'Change to dark mode'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" size="sm" />
     </q-footer>
   </q-page>
 </template>
