@@ -1,8 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <q-card flat class="text-center q-pa-md">
-      <q-img v-if="$q.dark.isActive" src="hivelightning-dark.png" style="margin:auto" />
-      <q-img v-else src="hivelightning-light.png" style="margin:auto" />
+      <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'" style="margin:auto" />
       <div class="text-title text-center">
         Pay a lightning network invoice with Hive or HBD
       </div>
@@ -85,7 +84,7 @@
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
       <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd.toFixed(2) }}
-      <q-btn @click="$q.dark.toggle()" :title="$q.dark.isActive ? 'Change to light mode':'Change to dark mode'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" size="sm" />
+      <q-btn flat dense @click="$q.dark.toggle()" :color="$q.dark.isActive ? 'black' : 'white'" :title="$q.dark.isActive ? 'Change to light mode':'Change to dark mode'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" size="sm" />
     </q-footer>
   </q-page>
 </template>
@@ -202,7 +201,7 @@ export default {
     }
   },
   mounted () {
-    this.checkDarkMode()
+    this.$q.dark.set('auto')
     this.getPrices()
     if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
     this.getServiceStatus(this.to)
