@@ -140,6 +140,7 @@ export default {
   },
   methods: {
     getPrices () {
+      console.log('are we there yet')
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
         .then((response) => { this.prices = response.data })
@@ -179,9 +180,26 @@ export default {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
         })
         .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
+    },
+    checkDarkMode () { // https://flaviocopes.com/javascript-detect-dark-mode/
+      console.log('How do we run stuff')
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        console.log('hello darkness my old friend')
+        this.$q.dark.toggle()
+      } else {
+        console.log('ive come to see the light')
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('onchange', event => {
+        if (event.matches) {
+          console.log('Darkness')
+        } else {
+          console.log('Let there BE Light')
+        }
+      })
     }
   },
   mounted () {
+    this.checkDarkMode()
     this.getPrices()
     if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
     this.getServiceStatus(this.to)
