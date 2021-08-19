@@ -1,7 +1,8 @@
 <template>
   <q-page class="flex flex-center">
     <q-card flat class="text-center q-pa-md">
-      <q-img src="hivelightning.png" style="margin:auto" />
+      <q-img v-if="$q.dark.isActive" src="hivelightning-dark.png" style="margin:auto" />
+      <q-img v-else src="hivelightning-light.png" style="margin:auto" />
       <div class="text-title text-center">
         Pay a lightning network invoice with Hive or HBD
       </div>
