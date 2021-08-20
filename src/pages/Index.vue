@@ -182,22 +182,6 @@ export default {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
         })
         .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
-    },
-    checkDarkMode () { // https://flaviocopes.com/javascript-detect-dark-mode/
-      console.log('How do we run stuff')
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        console.log('hello darkness my old friend')
-        this.$q.dark.toggle()
-      } else {
-        console.log('ive come to see the light')
-      }
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('onchange', event => {
-        if (event.matches) {
-          console.log('Darkness')
-        } else {
-          console.log('Let there BE Light')
-        }
-      })
     }
   },
   mounted () {
