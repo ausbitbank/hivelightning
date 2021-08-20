@@ -14,6 +14,9 @@
           class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
         />
       </div>
+      <div class="text-title text-center">
+        Using exchange run by <b>@{{ to }}</b>
+      </div>
       <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <div v-if="serviceStatus" class="text-caption">Exchange Status:
@@ -165,12 +168,14 @@ export default {
     },
     async sendKeychain (amount, token) {
       const user = ''
+      this.invoice += ' lnd.v4v.app'
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice, token)
       if (success) { this.$q.notify('Payment sent!'); this.invoice = '' }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },
     sendHivesigner (amount, token) {
+      this.invoice += '%20lnd.v4v.app'
       window.location.href = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
       this.invoice = ''
     },
