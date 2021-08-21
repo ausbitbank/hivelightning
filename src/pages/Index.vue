@@ -129,7 +129,8 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hbdBtc = this.prices.hive_dollar.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
+        let cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
+        if (cost > 1.10) { cost = 1.10 }
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -142,10 +143,14 @@ export default {
   },
   methods: {
     getPrices () {
-      console.log('are we there yet')
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
-        .then((response) => { this.prices = response.data })
+        .then((response) => {
+          this.prices = response.data
+          if (this.prices.hive_dollar.usd > 1.10) {
+            this.prices.hive_dollar.usd = 1.10
+          }
+        })
         .catch(() => { console.log('Failed to load data from coingecko api') })
     },
     checkInvoice () {
@@ -176,7 +181,8 @@ export default {
     },
     sendHivesigner (amount, token) {
       this.invoice += '%20lnd.v4v.app'
-      window.location.href = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      window.open(dest, '_blank')
       this.invoice = ''
     },
     getServiceStatus (account) {
