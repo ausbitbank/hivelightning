@@ -32,3 +32,4 @@ yarn-error.log*
 *.njsproj
 *.sln
 .vscode/settings.json
+.vscode/launch.json

@@ -14,6 +14,9 @@
           class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
         />
       </div>
+      <div class="text-title text-center">
+        Using exchange run by <b>@{{ to }}</b>
+      </div>
       <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <div v-if="serviceStatus" class="text-caption">Exchange Status:
@@ -126,7 +129,8 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hbdBtc = this.prices.hive_dollar.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
+        let cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
+        if (cost > 1.10) { cost = 1.10 }
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -141,7 +145,12 @@ export default {
     getPrices () {
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
-        .then((response) => { this.prices = response.data })
+        .then((response) => {
+          this.prices = response.data
+          if (this.prices.hive_dollar.usd > 1.10) {
+            this.prices.hive_dollar.usd = 1.10
+          }
+        })
         .catch(() => { console.log('Failed to load data from coingecko api') })
     },
     checkInvoice () {
@@ -164,13 +173,16 @@ export default {
     },
     async sendKeychain (amount, token) {
       const user = ''
+      this.invoice += ' lnd.v4v.app'
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice, token)
       if (success) { this.$q.notify('Payment sent!'); this.invoice = '' }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },
     sendHivesigner (amount, token) {
-      window.location.href = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      this.invoice += '%20lnd.v4v.app'
+      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      window.open(dest, '_blank')
       this.invoice = ''
     },
     getServiceStatus (account) {
