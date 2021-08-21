@@ -142,7 +142,6 @@ export default {
   },
   methods: {
     getPrices () {
-      console.log('are we there yet')
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
         .then((response) => { this.prices = response.data })
