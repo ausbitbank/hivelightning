@@ -17,7 +17,7 @@
       <div class="text-title text-center">
         Using exchange run by <b>@{{ to }}</b>
       </div>
-      <q-card v-if="invoiceValid && decodedInvoice" class="shadow-1 q-pa-sm">
+      <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <div v-if="serviceStatus" class="text-caption">Exchange Status:
           <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
@@ -127,10 +127,9 @@ export default {
     },
     costHbd: function () {
       if (this.prices && this.decodedInvoice) {
-        const hbdBtc = this.prices.hive_dollar.btc
+        const hbdUsd = this.prices.hive_dollar.usd
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        let cost = ((sats + this.overChargeSats) / hbdBtc) * this.overChargeMultiplier
-        if (cost > 1.10) { cost = 1.10 }
+        const cost = (((sats + this.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },
