@@ -176,7 +176,8 @@ export default {
     },
     sendHivesigner (amount, token) {
       this.invoice += '%20lnd.v4v.app'
-      window.location.href = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      window.open(dest, '_blank')
       this.invoice = ''
     },
     getServiceStatus (account) {
