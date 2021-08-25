@@ -16,9 +16,6 @@
       </div>
       <div class="text-title text-center">
         Using exchange run by <b>@{{ to }}</b>
-      </div>
-      <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
-        Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <div v-if="serviceStatus" class="text-caption">Exchange Status:
           <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
           <span v-else-if="serviceStatus.closed_for_maintenance === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
@@ -31,6 +28,9 @@
             </q-popup-proxy>
           </q-btn>
         </div>
+      </div>
+      <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
+        Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
         <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
           {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
