@@ -30,9 +30,9 @@
         </div>
       </div>
       <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
-        Valid invoice for <b>{{ decodedInvoice.satoshis }}</b> satoshis (<b>${{ costUsd }}</b> USD)<br />
+        Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
         <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-          {{ costHive }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
+          {{ tidyNumber(costHive) }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
               <q-list dense class="text-bold">
@@ -57,7 +57,7 @@
           </q-popup-proxy>
         </q-btn>
         <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-          {{ costHbd }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
+          {{ tidyNumber(costHbd) }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
               <q-list dense class="text-bold">
