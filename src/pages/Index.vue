@@ -172,15 +172,13 @@ export default {
     },
     async sendKeychain (amount, token) {
       const user = ''
-      this.invoice += ' lnd.v4v.app'
-      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice, token)
+      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
       if (success) { this.$q.notify('Payment sent!'); this.invoice = '' }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },
     sendHivesigner (amount, token) {
-      this.invoice += '%20lnd.v4v.app'
-      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice
+      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice + '%20lnd.v4v.app'
       window.open(dest, '_blank')
       this.invoice = ''
     },
