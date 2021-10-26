@@ -23,10 +23,14 @@
             <q-popup-proxy>
               <q-card flat class="text-center q-pa-sm">
                 <div class="text-title text-bold">Exchange Settings for {{ to }}</div>
-                <div v-for="line in Object.keys(serviceStatus)" :key="line">{{ line}} : {{ serviceStatus[line] }}</div>
+                <div v-for="line in Object.keys(serviceStatus)" :key="line">
+                  <span v-if="line === 'dynamic_fees_url'">{{ line}} : <a :href="serviceStatus[line]" target="_blank">{{ serviceStatus[line] }}</a></span>
+                  <span v-else>{{ line}} : {{ serviceStatus[line] }}</span>
+                </div>
               </q-card>
             </q-popup-proxy>
           </q-btn>
+          <div v-if="serviceStatus && serviceStatus['dynamic_fees_url']"><a :href="serviceStatus['dynamic_fees_url']" target="_blank"><q-icon name="open_in_new" /> Fee Details</a></div>
         </div>
       </div>
       <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
@@ -91,7 +95,11 @@
     </q-footer>
   </q-page>
 </template>
-
+<style scoped>
+a, a:visited, a:hover, a:active {
+  color: inherit;
+}
+</style>
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
