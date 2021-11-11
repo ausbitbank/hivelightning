@@ -36,10 +36,28 @@
       <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
         <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-          {{ tidyNumber(costHive) }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
+          <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
-              <q-list dense class="text-bold">
+              <q-list dense class="text-bold" v-if="decodedInvoice.satoshis === 1033"> <!-- temporary hivefest giveaway promo -->
+                <q-item clickable @click="sendKeychain(0.001,'HIVE')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Keychain
+                  </q-item-section>
+                </q-item>
+                <q-item clickable @click="sendHivesigner(0.001,'HIVE')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Signer
+                  </q-item-section>
+                </q-item>
+              </q-list>
+              <q-list dense class="text-bold" v-else>
                 <q-item clickable @click="sendKeychain(costHive,'HIVE')">
                   <q-item-section avatar>
                     <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
