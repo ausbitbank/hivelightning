@@ -105,9 +105,6 @@
         </q-btn>
       </q-card>
     </q-card>
-    <q-card>
-      <div class="tallypay" data-user="v4vapp">hello</div>
-    </q-card>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
