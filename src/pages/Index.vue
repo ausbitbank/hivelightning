@@ -99,12 +99,13 @@ import hive from '@hiveio/hive-js'
 export default {
   name: 'PageIndex',
   data () {
+    console.log('Conversion fee sats ' + this.conv_fee_sats)
     return {
       invoice: '',
       decodedInvoice: null,
       prices: null,
-      overChargeSats: 50 * 0.00000001,
-      overChargeMultiplier: 1.15, // 15% overcharge, change is returned
+      overChargeSats: 1000 * 0.00000001,
+      overChargeMultiplier: 1.05, // 15% overcharge, change is returned
       to: 'v4vapp',
       serviceStatus: null
     }
@@ -157,6 +158,17 @@ export default {
       if (this.invoiceValid) {
         console.info(invoice.decode(this.invoice))
         this.decodedInvoice = invoice.decode(this.invoice)
+        console.log('invoice ' + this.decodedInvoice.satoshis)
+        console.log('minimum = ' + this.minimum_invoice_payment_sats)
+        if (this.decodedInvoice.satoshis < this.minimum_invoice_payment_sats) {
+          console.error('Invoice too small ' + this.decodedInvoice.satoshis + ' Less than minimum: ' + this.minimum_invoice_payment_sats)
+          this.decodedInvoice = null
+          // Would be nice to have an error message come up.
+        } else if (this.decodedInvoice.satoshis > this.maximum_invoice_payment_sats) {
+          console.error('Invoice too large ' + this.decodedInvoice.satoshis + ' Greater than maximum: ' + this.maximum_invoice_payment_sats)
+          this.decodedInvoice = null
+          // Would be nice to have an error message come up.
+        }
       } else {
         this.decodedInvoice = null
       }
@@ -186,15 +198,19 @@ export default {
       hive.api.getAccountsAsync([account])
         .then((response) => {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
+          this.conv_fee_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.conv_fee_sats)
+          this.minimum_invoice_payment_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.minimum_invoice_payment_sats)
+          this.maximum_invoice_payment_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.maximum_invoice_payment_sats)
+          this.overChargeSats = this.conv_fee_sats * 0.00000001
         })
         .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
     }
   },
   mounted () {
+    this.getServiceStatus(this.to)
     this.$q.dark.set('auto')
     this.getPrices()
     if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
-    this.getServiceStatus(this.to)
   }
 }
 </script>
