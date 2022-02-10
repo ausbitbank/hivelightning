@@ -105,6 +105,9 @@
         </q-btn>
       </q-card>
     </q-card>
+    <q-card>
+      <div class="tallypay" data-user="v4vapp">hello</div>
+    </q-card>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
@@ -125,7 +128,6 @@ import hive from '@hiveio/hive-js'
 export default {
   name: 'PageIndex',
   data () {
-    console.log('Conversion fee sats ' + this.conv_fee_sats)
     return {
       invoice: '',
       decodedInvoice: null,
@@ -184,19 +186,25 @@ export default {
       if (this.invoiceValid) {
         console.info(invoice.decode(this.invoice))
         this.decodedInvoice = invoice.decode(this.invoice)
-        console.log('invoice ' + this.decodedInvoice.satoshis)
-        console.log('minimum = ' + this.minimum_invoice_payment_sats)
+        const dddd = Date.now() / 1000
+        const expiredSeconds = dddd - this.decodedInvoice.timeExpireDate
+        const expiredMinutes = parseInt(expiredSeconds % 3600)
+        if (dddd > this.decodedInvoice.timeExpireDate) {
+          this.$q.notify('This invoice expired  ' + expiredMinutes + ' minutes ago')
+          this.decodedInvoice = null
+        }
         if (this.decodedInvoice.satoshis < this.minimum_invoice_payment_sats) {
-          console.error('Invoice too small ' + this.decodedInvoice.satoshis + ' Less than minimum: ' + this.minimum_invoice_payment_sats)
+          const mess = ('This invoice too small ' + this.decodedInvoice.satoshis + ' is less than minimum: ' + this.minimum_invoice_payment_sats)
           this.decodedInvoice = null
-          // Would be nice to have an error message come up.
+          this.$q.notify(mess)
         } else if (this.decodedInvoice.satoshis > this.maximum_invoice_payment_sats) {
-          console.error('Invoice too large ' + this.decodedInvoice.satoshis + ' Greater than maximum: ' + this.maximum_invoice_payment_sats)
+          const mess = ('This invoice too large ' + this.decodedInvoice.satoshis + ' is greater than maximum: ' + this.maximum_invoice_payment_sats)
           this.decodedInvoice = null
-          // Would be nice to have an error message come up.
+          this.$q.notify(mess)
         }
       } else {
         this.decodedInvoice = null
+        this.$q.notify('Not a valid Lightning Invoice')
       }
     },
     tidyNumber (x) {
