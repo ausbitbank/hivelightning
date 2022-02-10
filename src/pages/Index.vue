@@ -23,19 +23,41 @@
             <q-popup-proxy>
               <q-card flat class="text-center q-pa-sm">
                 <div class="text-title text-bold">Exchange Settings for {{ to }}</div>
-                <div v-for="line in Object.keys(serviceStatus)" :key="line">{{ line}} : {{ serviceStatus[line] }}</div>
+                <div v-for="line in Object.keys(serviceStatus)" :key="line">
+                  <span v-if="line === 'dynamic_fees_url'">{{ line}} : <a :href="getHiveLink(serviceStatus[line])" target="_blank">{{ serviceStatus[line] }}</a></span>
+                  <span v-else>{{ line}} : {{ serviceStatus[line] }}</span>
+                </div>
               </q-card>
             </q-popup-proxy>
           </q-btn>
+          <div v-if="serviceStatus && serviceStatus['dynamic_fees_url']"><a :href="getHiveLink(serviceStatus['dynamic_fees_url'])" target="_blank"><q-icon name="open_in_new" /> Fee Details</a></div>
         </div>
       </div>
       <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
         Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
         <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-          {{ tidyNumber(costHive) }} HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
+          <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
           <q-popup-proxy>
             <q-card>
-              <q-list dense class="text-bold">
+              <q-list dense class="text-bold" v-if="decodedInvoice.satoshis === 1033"> <!-- temporary hivefest giveaway promo -->
+                <q-item clickable @click="sendKeychain(0.001,'HIVE')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Keychain
+                  </q-item-section>
+                </q-item>
+                <q-item clickable @click="sendHivesigner(0.001,'HIVE')">
+                  <q-item-section avatar>
+                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                  </q-item-section>
+                  <q-item-section>
+                    Hive Signer
+                  </q-item-section>
+                </q-item>
+              </q-list>
+              <q-list dense class="text-bold" v-else>
                 <q-item clickable @click="sendKeychain(costHive,'HIVE')">
                   <q-item-section avatar>
                     <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
@@ -91,7 +113,11 @@
     </q-footer>
   </q-page>
 </template>
-
+<style scoped>
+a, a:visited, a:hover, a:active {
+  color: inherit;
+}
+</style>
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
@@ -204,7 +230,8 @@ export default {
           this.overChargeSats = this.conv_fee_sats * 0.00000001
         })
         .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
-    }
+    },
+    getHiveLink (authperm) { return 'https://hivel.ink/' + authperm }
   },
   mounted () {
     this.getServiceStatus(this.to)
