@@ -1,110 +1,120 @@
 <template>
   <q-page class="flex flex-center">
-    <q-card flat class="text-center q-pa-md">
-      <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'" style="margin:auto" />
-      <div class="text-title text-center">
-        Pay a lightning network invoice with Hive or HBD
+    <div class="row">
+      <div class="col-xs-12 col-sm-6 col-md-5">
+        <q-card flat class="text-center q-pa-md">
+          <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'" style="margin:auto" />
+          <div class="text-title text-center">
+            <h4>Pay a lightning network invoice with Hive or HBD</h4>
+          </div>
+          <div class="q-pa-md" style="max-width: 90%; margin:auto">
+            <q-input
+              v-model="invoice"
+              label="Lightning network invoice"
+              filled
+              autogrow
+              class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
+            />
+          </div>
+          <div class="text-title text-center">
+            Using exchange run by <b>@{{ to }}</b>
+            <div v-if="serviceStatus" class="text-caption">Exchange Status:
+              <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
+              <span v-else-if="serviceStatus.closed_for_maintenance === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
+              <q-btn icon="info" color="blue" flat dense size="sm" title="Show full exchange settings">
+                <q-popup-proxy>
+                  <q-card flat class="text-center q-pa-sm">
+                    <div class="text-title text-bold">Exchange Settings for {{ to }}</div>
+                    <div v-for="line in Object.keys(serviceStatus)" :key="line">
+                      <span v-if="line === 'dynamic_fees_url'">{{ line}} : <a :href="getHiveLink(serviceStatus[line])" target="_blank">{{ serviceStatus[line] }}</a></span>
+                      <span v-else>{{ line}} : {{ serviceStatus[line] }}</span>
+                    </div>
+                  </q-card>
+                </q-popup-proxy>
+              </q-btn>
+              <div v-if="serviceStatus && serviceStatus['dynamic_fees_url']"><a :href="getHiveLink(serviceStatus['dynamic_fees_url'])" target="_blank"><q-icon name="open_in_new" /> Fee Details</a></div>
+            </div>
+          </div>
+          <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
+            Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
+            <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
+              <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
+              <q-popup-proxy>
+                <q-card>
+                  <q-list dense class="text-bold" v-if="decodedInvoice.satoshis === 1033"> <!-- temporary hivefest giveaway promo -->
+                    <q-item clickable @click="sendKeychain(0.001,'HIVE')">
+                      <q-item-section avatar>
+                        <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                      </q-item-section>
+                      <q-item-section>
+                        Hive Keychain
+                      </q-item-section>
+                    </q-item>
+                    <q-item clickable @click="sendHivesigner(0.001,'HIVE')">
+                      <q-item-section avatar>
+                        <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                      </q-item-section>
+                      <q-item-section>
+                        Hive Signer
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                  <q-list dense class="text-bold" v-else>
+                    <q-item clickable @click="sendKeychain(costHive,'HIVE')">
+                      <q-item-section avatar>
+                        <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                      </q-item-section>
+                      <q-item-section>
+                        Hive Keychain
+                      </q-item-section>
+                    </q-item>
+                    <q-item clickable @click="sendHivesigner(costHive,'HIVE')">
+                      <q-item-section avatar>
+                        <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                      </q-item-section>
+                      <q-item-section>
+                        Hive Signer
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-card>
+              </q-popup-proxy>
+            </q-btn>
+            <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
+              {{ tidyNumber(costHbd) }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
+              <q-popup-proxy>
+                <q-card>
+                  <q-list dense class="text-bold">
+                    <q-item clickable @click="sendKeychain(costHbd,'HBD')">
+                      <q-item-section avatar>
+                        <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
+                      </q-item-section>
+                      <q-item-section>
+                        Hive Keychain
+                      </q-item-section>
+                    </q-item>
+                    <q-item clickable @click="sendHivesigner(costHbd,'HBD')">
+                      <q-item-section avatar>
+                        <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
+                      </q-item-section>
+                      <q-item-section>
+                        Hive Signer
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-card>
+              </q-popup-proxy>
+            </q-btn>
+          </q-card>
+        </q-card>
       </div>
-      <div class="q-pa-md" style="max-width: 90%; margin:auto">
-        <q-input
-          v-model="invoice"
-          label="Lightning network invoice"
-          filled
-          autogrow
-          class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
-        />
+      <div class="col-xs-0 col-sm-0 col-md-1"></div>
+      <div class="col-xs-12 col-sm-6 col-md-5">
+        <q-card flat class="text-center p-pa-md">
+          <div class="tallypay" data-user="v4vapp"></div>
+        </q-card>
       </div>
-      <div class="text-title text-center">
-        Using exchange run by <b>@{{ to }}</b>
-        <div v-if="serviceStatus" class="text-caption">Exchange Status:
-          <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
-          <span v-else-if="serviceStatus.closed_for_maintenance === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
-          <q-btn icon="info" color="blue" flat dense size="sm" title="Show full exchange settings">
-            <q-popup-proxy>
-              <q-card flat class="text-center q-pa-sm">
-                <div class="text-title text-bold">Exchange Settings for {{ to }}</div>
-                <div v-for="line in Object.keys(serviceStatus)" :key="line">
-                  <span v-if="line === 'dynamic_fees_url'">{{ line}} : <a :href="getHiveLink(serviceStatus[line])" target="_blank">{{ serviceStatus[line] }}</a></span>
-                  <span v-else>{{ line}} : {{ serviceStatus[line] }}</span>
-                </div>
-              </q-card>
-            </q-popup-proxy>
-          </q-btn>
-          <div v-if="serviceStatus && serviceStatus['dynamic_fees_url']"><a :href="getHiveLink(serviceStatus['dynamic_fees_url'])" target="_blank"><q-icon name="open_in_new" /> Fee Details</a></div>
-        </div>
-      </div>
-      <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
-        Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
-        <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-          <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
-          <q-popup-proxy>
-            <q-card>
-              <q-list dense class="text-bold" v-if="decodedInvoice.satoshis === 1033"> <!-- temporary hivefest giveaway promo -->
-                <q-item clickable @click="sendKeychain(0.001,'HIVE')">
-                  <q-item-section avatar>
-                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
-                  </q-item-section>
-                  <q-item-section>
-                    Hive Keychain
-                  </q-item-section>
-                </q-item>
-                <q-item clickable @click="sendHivesigner(0.001,'HIVE')">
-                  <q-item-section avatar>
-                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
-                  </q-item-section>
-                  <q-item-section>
-                    Hive Signer
-                  </q-item-section>
-                </q-item>
-              </q-list>
-              <q-list dense class="text-bold" v-else>
-                <q-item clickable @click="sendKeychain(costHive,'HIVE')">
-                  <q-item-section avatar>
-                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
-                  </q-item-section>
-                  <q-item-section>
-                    Hive Keychain
-                  </q-item-section>
-                </q-item>
-                <q-item clickable @click="sendHivesigner(costHive,'HIVE')">
-                  <q-item-section avatar>
-                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
-                  </q-item-section>
-                  <q-item-section>
-                    Hive Signer
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-card>
-          </q-popup-proxy>
-        </q-btn>
-        <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-          {{ tidyNumber(costHbd) }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
-          <q-popup-proxy>
-            <q-card>
-              <q-list dense class="text-bold">
-                <q-item clickable @click="sendKeychain(costHbd,'HBD')">
-                  <q-item-section avatar>
-                    <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
-                  </q-item-section>
-                  <q-item-section>
-                    Hive Keychain
-                  </q-item-section>
-                </q-item>
-                <q-item clickable @click="sendHivesigner(costHbd,'HBD')">
-                  <q-item-section avatar>
-                    <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
-                  </q-item-section>
-                  <q-item-section>
-                    Hive Signer
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-card>
-          </q-popup-proxy>
-        </q-btn>
-      </q-card>
-    </q-card>
+    </div>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
