@@ -190,6 +190,21 @@
   </q-card>
 </template>
 
+<style scoped>
+  a, a:visited, a:hover, a:active {
+    color: inherit;
+  }
+  .body--dark .error {
+    background: darkred;
+  }
+  .body--light .error {
+    background: pink;
+  }
+  .invoice-error {
+    border: 1px solid grey;
+  }
+</style>
+
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
@@ -313,7 +328,9 @@ export default {
       this.checkInvoice()
     },
     checkInvoice () {
-      if (this.invoice.startsWith('lightning:')) { this.invoice = this.invoice.slice(10) }
+      if (this.invoice.startsWith('lightning:')) {
+        this.invoice = this.invoice.slice(10)
+      }
       if (this.invoice.startsWith('lnbc')) {
         console.log('Checking invoice: ')
         try {
@@ -321,6 +338,12 @@ export default {
         } catch (err) {
           console.log(err)
           this.invoiceError = 'Not a valid invoice'
+          this.decodedInvoice = null
+          return
+        }
+        if (this.decodedInvoice.payeeNodeKey === '0396693dee59afd67f178af392990d907d3a9679fa7ce00e806b8e373ff6b70bd8') {
+          // This is my NODE can't self pay
+          this.invoiceError = 'This Invoice points to V4VApp: invalid invoice'
           this.decodedInvoice = null
           return
         }
@@ -387,7 +410,6 @@ export default {
   },
   mounted () {
     this.getServiceStatus(this.to)
-    this.$q.dark.set('auto')
     if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
   }
 }

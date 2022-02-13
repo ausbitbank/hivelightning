@@ -1,7 +1,29 @@
 <template>
   <q-page class="flex flex-center">
-    <hivelight
-      :prices="prices"></hivelight>
+    <q-card>
+      <q-tabs
+      v-model="tab"
+      class="q-my-md shadow-2"
+      inline-label>
+        <q-tab name="H2L" icon="bolt" label="Get Lightning" />
+        <q-tab name="L2H" icon="bolt" label="Get Hive" />
+        <q-tab name="Instructions" icon="info" label="Information" />
+      </q-tabs>
+      <q-tab-panels v-model="tab" animated>
+        <q-tab-panel name="H2L">
+          <hivelight
+            :prices="prices"></hivelight>
+        </q-tab-panel>
+        <q-tab-panel name="L2H">
+          <lighthive>passing</lighthive>
+          <h4>Lightning to Hive</h4>
+          <div class="tallypay" data-user="v4vapp"></div>
+        </q-tab-panel>
+      </q-tab-panels>
+    </q-card>
+    <q-card>
+      <lighthive>passing</lighthive>
+    </q-card>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
@@ -10,27 +32,19 @@
     </q-footer>
   </q-page>
 </template>
+
 <style scoped>
-  a, a:visited, a:hover, a:active {
-    color: inherit;
-  }
-  .body--dark .error {
-    background: darkred;
-  }
-  .body--light .error {
-    background: pink;
-  }
-  .invoice-error {
-    border: 1px solid grey;
-  }
 </style>
+
 <script>
 import HiveToLightningVue from 'src/components/HiveToLightning.vue'
+import LightningToHiveVue from 'src/components/LightningToHive.vue'
 
 export default {
   name: 'PageIndex',
   data () {
     return {
+      tab: 'H2L',
       prices: null
     }
   },
@@ -59,7 +73,8 @@ export default {
     }
   },
   components: {
-    hivelight: HiveToLightningVue
+    hivelight: HiveToLightningVue,
+    lighthive: LightningToHiveVue
   },
   mounted () {
     this.getPrices()
