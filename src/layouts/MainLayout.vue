@@ -1,20 +1,15 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar class="bg-red text-white q-my-md shadow-2">
-        <q-btn flat round dense icon="menu" class="q-mr-sm" />
-        <q-space />
-        <q-btn-toggle
-          v-model="model"
-          flat stretch
-          toggle-color="yellow"
-          :options="[
-            {label: 'Hive to Lightning', value: 'h2l'},
-            {label: 'Lightning to Hive', value: 'l2h'},
-          ]"
-        />
-      </q-toolbar>
-    </q-header>
+    <q-tabs
+      v-model="tab"
+      active-bg-color="primary"
+      bg-color="primary"
+      text-color="positive"
+      class="q-my-md shadow-2"
+      inline-label>
+      <q-tab name="H2L" icon="bolt" label="Get Lightning" />
+      <q-tab name="L2H" icon="hexagon" label="Get Hive" />
+    </q-tabs>
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -26,7 +21,7 @@ export default {
   name: 'MainLayout',
   data () {
     return {
-      model: 'h2l'
+      tab: 'H2L'
     }
   }
 }
