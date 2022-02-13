@@ -25,6 +25,8 @@
   }
 </style>
 <script>
+import HiveToLightningVue from 'src/components/HiveToLightning.vue'
+
 export default {
   name: 'PageIndex',
   data () {
@@ -57,7 +59,7 @@ export default {
     }
   },
   components: {
-    hivelight: require('src/components/HiveToLightning.vue').default
+    hivelight: HiveToLightningVue
   },
   mounted () {
     this.getPrices()
