@@ -1,103 +1,22 @@
 <template>
   <q-page class="flex flex-center">
+    <div class="row">
+      <div class="col-xs-12 col-sm-6 col-md-5">
         <q-card flat class="text-center q-pa-md">
           <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'" style="margin:auto" />
           <div class="text-title text-center">
-            Pay a lightning network invoice with Hive or HBD
+            <h4>Pay a lightning network invoice with Hive or HBD</h4>
           </div>
-          <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
-            Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
-            Expires in {{ expiresIn }}<br />
-            <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-              <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
-              <q-popup-proxy>
-                <q-card>
-                  <q-list dense class="text-bold" v-if="decodedInvoice.satoshis === 1033"> <!-- temporary hivefest giveaway promo -->
-                    <q-item clickable @click="sendKeychain(0.001,'HIVE')">
-                      <q-item-section avatar>
-                        <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
-                      </q-item-section>
-                      <q-item-section>
-                        Hive Keychain
-                      </q-item-section>
-                    </q-item>
-                    <q-item clickable @click="sendHivesigner(0.001,'HIVE')">
-                      <q-item-section avatar>
-                        <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
-                      </q-item-section>
-                      <q-item-section>
-                        Hive Signer
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                  <q-list dense class="text-bold" v-else>
-                    <q-item clickable @click="sendKeychain(costHive,'HIVE')">
-                      <q-item-section avatar>
-                        <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
-                      </q-item-section>
-                      <q-item-section>
-                        Hive Keychain
-                      </q-item-section>
-                    </q-item>
-                    <q-item clickable @click="sendHivesigner(costHive,'HIVE')">
-                      <q-item-section avatar>
-                        <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
-                      </q-item-section>
-                      <q-item-section>
-                        Hive Signer
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-card>
-              </q-popup-proxy>
-            </q-btn>
-            <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
-              {{ tidyNumber(costHbd) }} HBD <q-icon name="img:hbd.svg" title="Hive Dollars" size="md" class="q-ml-sm" />
-              <q-popup-proxy>
-                <q-card>
-                  <q-list dense class="text-bold">
-                    <q-item clickable @click="sendKeychain(costHbd,'HBD')">
-                      <q-item-section avatar>
-                        <q-icon name="img:hivekeychain.png" title="Pay with Hive Keychain" />
-                      </q-item-section>
-                      <q-item-section>
-                        Hive Keychain
-                      </q-item-section>
-                    </q-item>
-                    <q-item clickable @click="sendHivesigner(costHbd,'HBD')">
-                      <q-item-section avatar>
-                        <q-icon name="img:hivesigner.png" title="Pay with Hive Signer" />
-                      </q-item-section>
-                      <q-item-section>
-                        Hive Signer
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-card>
-              </q-popup-proxy>
-            </q-btn>
-          </q-card>
           <div class="q-pa-md" style="max-width: 90%; margin:auto">
             <q-input
               v-model="invoice"
-              v-autofocus
               label="Lightning network invoice"
               filled
               autogrow
-              class="text-centre"
-              @keyup="handleKeyup"
-              @paste="pasteCheckInvoice"
-              @keyup.esc="clearInvoice"
-              @keyup.enter="checkInvoice"
-              :style="invoiceStyles"
+              class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
             />
           </div>
-          <div
-            v-if="invoiceError.length"
-            class="text-title text-centre invoice-error error">
-            {{ invoiceError }}</div>
           <div class="text-title text-center">
-            <i class="pi pi-hiveio"></i>
             Using exchange run by <b>@{{ to }}</b>
             <div v-if="serviceStatus" class="text-caption">Exchange Status:
               <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
@@ -116,9 +35,8 @@
               <div v-if="serviceStatus && serviceStatus['dynamic_fees_url']"><a :href="getHiveLink(serviceStatus['dynamic_fees_url'])" target="_blank"><q-icon name="open_in_new" /> Fee Details</a></div>
             </div>
           </div>
-          <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
+          <q-card v-if="invoiceValid && decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
             Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
-            Expires in {{ expiresIn }}<br />
             <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
               <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
               <q-popup-proxy>
@@ -189,6 +107,14 @@
             </q-btn>
           </q-card>
         </q-card>
+      </div>
+      <div class="col-xs-0 col-sm-0 col-md-1"></div>
+      <div class="col-xs-12 col-sm-6 col-md-5">
+        <q-card flat class="text-center p-pa-md">
+          <div class="tallypay" data-user="v4vapp"></div>
+        </q-card>
+      </div>
+    </div>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
@@ -198,18 +124,9 @@
   </q-page>
 </template>
 <style scoped>
-  a, a:visited, a:hover, a:active {
-    color: inherit;
-  }
-  .body--dark .error {
-    background: darkred;
-  }
-  .body--light .error {
-    background: pink;
-  }
-  .invoice-error {
-    border: 1px solid grey;
-  }
+a, a:visited, a:hover, a:active {
+  color: inherit;
+}
 </style>
 <script>
 import invoice from 'bolt11'
@@ -221,8 +138,6 @@ export default {
     return {
       invoice: '',
       decodedInvoice: null,
-      expiredMinutes: null,
-      invoiceError: '',
       prices: null,
       overChargeSats: 1000 * 0.00000001,
       overChargeMultiplier: 1.05, // 15% overcharge, change is returned
@@ -230,15 +145,14 @@ export default {
       serviceStatus: null
     }
   },
-  directives: {
-    autofocus: {
-      inserted (el) {
-        el.focus()
-        console.log('input inserted')
-      }
-    }
-  },
   computed: {
+    invoiceValid: function () {
+      if (this.invoice.startsWith('lnbc')) {
+        return true
+      } else {
+        return false
+      }
+    },
     costHive: function () {
       if (this.prices && this.decodedInvoice) {
         const hiveBtc = this.prices.hive.btc
@@ -260,75 +174,9 @@ export default {
         const sats = this.decodedInvoice.satoshis * 0.00000001
         return (sats * this.prices.bitcoin.usd).toFixed(2)
       } else { return null }
-    },
-    expiresIn: function () {
-      const mins = -this.expiredMinutes
-      if (mins > 60) {
-        return Math.floor(mins / 60) + ' hrs' + Math.floor(mins % 60) + ' mins'
-      }
-      return (mins + ' mins')
-    },
-    invoiceValid: function () {
-      if (this.invoice.length === 0) {
-        return true
-      }
-      if (this.invoiceError === '' && this.decodedInvoice) {
-        console.log('is the invoice valid? YES')
-        return true
-      } else {
-        console.log('is the invoice valid? NO')
-        return false
-      }
-    },
-    invoiceStyles () {
-      console.log(this.invoice.length)
-      let ansStyle = ''
-      if (this.invoice.length > 0) {
-        if (this.invoiceValid) {
-          if (this.$q.dark.isActive) {
-            ansStyle = {
-              background: 'darkgreen'
-            }
-          } else {
-            ansStyle = {
-              background: 'lightgreen'
-            }
-          }
-        } else {
-          if (this.$q.dark.isActive) {
-            ansStyle = {
-              background: 'darkred'
-            }
-          } else {
-            ansStyle = {
-              background: 'pink'
-            }
-          }
-        }
-      } else {
-        ansStyle = {
-          background: 'none',
-          color: 'black'
-        }
-      }
-      return ansStyle
     }
   },
   methods: {
-    clearInvoice () {
-      this.invoice = ''
-      this.invoiceError = ''
-      this.decodedInvoice = null
-    },
-    handleKeyup (e) {
-      if (this.invoice.length === 0) {
-        this.invoiceError = ''
-        this.decodedInvoice = null
-      } else {
-        this.checkInvoice()
-      }
-      console.log(e)
-    },
     getPrices () {
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
@@ -340,46 +188,30 @@ export default {
         })
         .catch(() => { console.log('Failed to load data from coingecko api') })
     },
-    pasteCheckInvoice (evt) {
-      this.invoice = evt.clipboardData.getData('text/plain')
-      this.checkInvoice()
-    },
     checkInvoice () {
       if (this.invoice.startsWith('lightning:')) { this.invoice = this.invoice.slice(10) }
-      if (this.invoice.startsWith('lnbc')) {
-        console.log('Checking invoice: ')
-        try {
-          this.decodedInvoice = invoice.decode(this.invoice)
-        } catch (err) {
-          console.log(err)
-          this.invoiceError = 'Not a valid invoice'
-          this.decodedInvoice = null
-          return
-        }
-        console.log(this.decodedInvoice)
+      if (this.invoiceValid) {
+        console.info(invoice.decode(this.invoice))
+        this.decodedInvoice = invoice.decode(this.invoice)
         const dddd = Date.now() / 1000
         const expiredSeconds = dddd - this.decodedInvoice.timeExpireDate
-        this.expiredMinutes = parseInt(expiredSeconds % 3600)
+        const expiredMinutes = parseInt(expiredSeconds % 3600)
         if (dddd > this.decodedInvoice.timeExpireDate) {
-          this.invoiceError = ('This invoice expired  ' + this.expiredMinutes + ' minutes ago')
-          // this.$q.notify('This invoice expired  ' + expiredMinutes + ' minutes ago')
+          this.$q.notify('This invoice expired  ' + expiredMinutes + ' minutes ago')
           this.decodedInvoice = null
-        } else if (this.decodedInvoice.satoshis < this.minimum_invoice_payment_sats) {
-          this.invoiceError = ('This invoice too small ' + this.decodedInvoice.satoshis + ' is less than minimum: ' + this.minimum_invoice_payment_sats)
+        }
+        if (this.decodedInvoice.satoshis < this.minimum_invoice_payment_sats) {
+          const mess = ('This invoice too small ' + this.decodedInvoice.satoshis + ' is less than minimum: ' + this.minimum_invoice_payment_sats)
           this.decodedInvoice = null
-          // this.$q.notify(this.invoiceError)
+          this.$q.notify(mess)
         } else if (this.decodedInvoice.satoshis > this.maximum_invoice_payment_sats) {
-          this.invoiceError = ('This invoice too large ' + this.decodedInvoice.satoshis + ' is greater than maximum: ' + this.maximum_invoice_payment_sats)
+          const mess = ('This invoice too large ' + this.decodedInvoice.satoshis + ' is greater than maximum: ' + this.maximum_invoice_payment_sats)
           this.decodedInvoice = null
-          // this.$q.notify(this.invoiceError)
-        } else {
-          this.invoiceError = ''
-          console.log('No errors')
+          this.$q.notify(mess)
         }
       } else {
-        this.invoiceError = ('Not a valid Lightning Invoice')
         this.decodedInvoice = null
-        // this.$q.notify(this.invoiceError)
+        this.$q.notify('Not a valid Lightning Invoice')
       }
     },
     tidyNumber (x) {
