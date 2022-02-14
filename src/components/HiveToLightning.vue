@@ -88,6 +88,7 @@
         @paste="pasteCheckInvoice"
         @keyup.esc="clearInvoice"
         @keyup.enter="checkInvoice"
+        @input="$emit('prices', input)"
         :style="invoiceStyles"
       />
     </div>
@@ -208,7 +209,6 @@
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
-import hive from '@hiveio/hive-js'
 export default {
   name: 'HiveToLightning',
   data () {
@@ -395,7 +395,7 @@ export default {
       this.invoice = ''
     },
     getServiceStatus (account) {
-      hive.api.getAccountsAsync([account])
+      this.$hive.api.getAccountsAsync([account])
         .then((response) => {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
           this.conv_fee_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.conv_fee_sats)

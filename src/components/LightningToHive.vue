@@ -5,7 +5,7 @@
     </div>
     <usersearch
       @keyup="handleKeyup"
-      :username="toAccount"
+      :username="hiveAccname"
       @selectUsername="setUsername"
       label="To account"></usersearch>
   </q-card>

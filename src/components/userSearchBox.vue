@@ -50,21 +50,14 @@ export default {
         if (err) {
           console.error(err)
         } else {
-          let accounts = data.map(el => {
+          const accounts = data.map(el => {
             return el.account
-          })
-          accounts = accounts.filter(el => {
+          }).filter(el => {
             return this.badActors.indexOf(el) === -1
           })
           this.usernameSuggestions = accounts
         }
       })
-      // this.$hive.api.lookupAccountsAsync(partialusername, 5).then(
-      //   data => {
-      //     this.usernameSuggestions = data.filter(el => {
-      //       return this.badActors.indexOf(el) === -1
-      //     })
-      //   })
     },
     setModel (val) {
       this.input = val

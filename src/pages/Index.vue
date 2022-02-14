@@ -19,9 +19,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="h2l">
-          <div class="text-h6">Hive to Lightning</div>
           <hivelight
-            :prices="prices"></hivelight>
+            v-bind:prices="prices"></hivelight>
         </q-tab-panel>
 
         <q-tab-panel name="l2h">
@@ -52,6 +51,7 @@ export default {
       tab: 'l2h'
     }
   },
+  props: ['prices'],
   computed: {
   },
   components: {
