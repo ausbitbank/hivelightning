@@ -2,7 +2,7 @@
   <q-card flat class="text-center q-pa-md">
     <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'" style="margin:auto" />
     <div class="text-title text-center">
-      Pay a lightning network invoice with Hive or HBD
+      Convert <i class="pi pi-hiveio"></i> Hive or HBD to <i class="bolt"></i> Lightning
     </div>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
@@ -275,7 +275,6 @@ export default {
       }
     },
     invoiceStyles () {
-      console.log(this.invoice.length)
       let ansStyle = ''
       if (this.invoice.length > 0) {
         if (this.invoiceValid) {
