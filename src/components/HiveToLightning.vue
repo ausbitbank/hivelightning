@@ -85,10 +85,9 @@
         autogrow
         class="text-centre"
         @keyup="handleKeyup"
-        @paste="pasteCheckInvoice"
+        @paste.prevent="pasteCheckInvoice"
         @keyup.esc="clearInvoice"
         @keyup.enter="checkInvoice"
-        @input="$emit('prices', input)"
         :style="invoiceStyles"
       />
     </div>
@@ -323,6 +322,7 @@ export default {
       console.log(e)
     },
     pasteCheckInvoice (evt) {
+      console.log(evt.clipboardData.getData('text/plain'))
       this.invoice = evt.clipboardData.getData('text/plain')
       this.checkInvoice()
     },
