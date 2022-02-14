@@ -5,8 +5,8 @@
       Convert <i class="pi pi-hiveio"></i> Hive or HBD to <i class="bolt"></i> Lightning
     </div>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
-      Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
-      Expires in {{ expiresIn }}<br />
+      <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
+      Expires in {{ expiresIn }}</div>
       <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
         <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
         <q-popup-proxy>
@@ -98,7 +98,7 @@
     <div class="text-title text-center">
       <i class="pi pi-hiveio"></i>
       Using exchange run by <b>@{{ to }}</b>
-      <div v-if="serviceStatus" class="text-caption">Exchange Status:
+      <div q-pa-sm v-if="serviceStatus" class="text-caption">Exchange Status:
         <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
         <span v-else-if="serviceStatus.closed_for_maintenance === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
         <q-btn icon="info" color="blue" flat dense size="sm" title="Show full exchange settings">
@@ -116,8 +116,8 @@
       </div>
     </div>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
-      Valid invoice for <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> satoshis (<b>${{ tidyNumber(costUsd) }}</b> USD)<br />
-      Expires in {{ expiresIn }}<br />
+      <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
+      Expires in {{ expiresIn }}</div>
       <q-btn no-caps glossy :disable="serviceStatus.closed_for_maintenance">
         <span v-if="decodedInvoice.satoshis === 1033">0.001 </span><span v-else>{{ tidyNumber(costHive) }}</span> HIVE <q-icon name="img:hive.svg" title="Hive" size="md" class="q-ml-sm" />
         <q-popup-proxy>
