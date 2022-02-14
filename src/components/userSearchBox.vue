@@ -1,19 +1,28 @@
 <template>
-  <q-select
-    clearable
-    new-value-mode="add"
-    auto-complete
-    :value="input"
-    use-input
-    hide-selected
-    fill-input
-    input-debounce="100"
-    v-model="input"
-    :label="label"
-    :options="usernameSuggestions"
-    @filter="filterFn"
-    @filter-abort="abortFilterFn"
-    @input="$emit('selectUsername', input)" />
+  <div class="row">
+    <div class="col-8 q-pr-sm">
+      <q-select
+        clearable
+        new-value-mode="add"
+        auto-complete
+        :value="input"
+        use-input
+        hide-selected
+        fill-input
+        input-debounce="100"
+        v-model="input"
+        :label="label"
+        :options="usernameSuggestions"
+        @keyup.esc="clearInput"
+        @filter="filterFn"
+        @filter-abort="abortFilterFn"
+        @input-value="virtualScroll"
+        @input="$emit('selectUsername', input)" />
+      </div>
+      <div class="col-4">
+        <q-img :src="avatarIRI" width="64px" height="64px"/>
+      </div>
+  </div>
 </template>
 <script>
 import badActorList from '@hiveio/hivescript/bad-actors.json'
@@ -23,7 +32,18 @@ export default {
     return {
       input: this.username,
       usernameSuggestions: [],
-      badActors: badActorList
+      badActors: badActorList,
+      vscrollAcc: null
+    }
+  },
+  computed: {
+    avatarIRI: function () {
+      console.log(this.vscrollAcc)
+      console.log(this.usernameSuggestions[0])
+      console.log(this.input)
+      if (this.vscrollAcc) {
+        return 'https://images.hive.blog/u/' + this.vscrollAcc + '/avatar'
+      } else { return null }
     }
   },
   props: ['username', 'label'],
@@ -37,6 +57,9 @@ export default {
       update(() => {
         this.searchHiveUsernames(val)
       })
+    },
+    virtualScroll (obj) {
+      this.vscrollAcc = obj
     },
     abortFilterFn () {
     },
@@ -62,6 +85,10 @@ export default {
     setModel (val) {
       this.input = val
       console.log('model set ' + val)
+    },
+    clearInput () {
+      this.input = ''
+      this.usernameSuggestions = []
     }
   }
 }

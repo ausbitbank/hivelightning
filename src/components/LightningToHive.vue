@@ -4,7 +4,6 @@
       Pay a lightning network invoice with Hive or HBD
     </div>
     <usersearch
-      @keyup="handleKeyup"
       :username="hiveAccname"
       @selectUsername="setUsername"
       label="To account"></usersearch>
@@ -30,16 +29,6 @@ export default {
     setUsername (u) {
       this.hiveAccname = u
       console.log(this.hiveAccname)
-    },
-    handleKeyup () {
-      console.log(this.toAccount)
-      // this.getHiveAccounts()
-    },
-    getHiveAccounts () {
-      this.$hive.api.getAccountReputations(this.hiveAccname, 10, function (err, data) {
-        this.nameList = data
-        console.log(err, data)
-      })
     }
   },
   mounted () {
