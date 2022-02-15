@@ -1,12 +1,29 @@
 <template>
   <q-card flat class="text-center p-pa-md">
     <div class="text-title text-center">
-      Pay a lightning network invoice with Hive or HBD
     </div>
     <usersearch
       :username="hiveAccname"
       @selectUsername="setUsername"
       label="To account"></usersearch>
+    <div>
+      <div>
+        <q-input
+        name="Memo"
+        v-model="memo"
+        label="Optional Memo to recipient (will be private)"
+        filled
+        class="text-centre"
+        />
+      </div>
+      <div>
+        <v4vpay
+          v-bind:prices="prices"
+          v-bind:hiveAccname="hiveAccname"
+          v-bind:memo="memo"
+        />
+      </div>
+    </div>
   </q-card>
 </template>
 
@@ -15,6 +32,7 @@
 
 <script>
 import userSearchBoxVue from 'src/components/userSearchBox.vue'
+import V4VPay from 'src/components/V4VPay.vue'
 
 // import hive from '@hiveio/hive-js'
 export default {
@@ -22,9 +40,11 @@ export default {
   data () {
     return {
       hiveAccname: '',
+      memo: '',
       nameList: ''
     }
   },
+  props: ['prices'],
   methods: {
     setUsername (u) {
       this.hiveAccname = u
@@ -35,7 +55,8 @@ export default {
     console.log('lightningtohive')
   },
   components: {
-    usersearch: userSearchBoxVue
+    usersearch: userSearchBoxVue,
+    v4vpay: V4VPay
   }
 }
 </script>

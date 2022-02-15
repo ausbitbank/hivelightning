@@ -25,7 +25,8 @@
 
         <q-tab-panel name="l2h">
           <div class="text-h6">Lightning to Hive</div>
-          <lighthive></lighthive>
+          <lighthive
+          v-bind:prices="prices"></lighthive>
         </q-tab-panel>
 
         <q-tab-panel name="info">

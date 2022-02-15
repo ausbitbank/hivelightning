@@ -4,7 +4,6 @@
     <div class="col-10 q-pr-sm">
       <q-select
         clearable
-        new-value-mode="add"
         auto-complete
         :value="input"
         use-input
@@ -23,15 +22,6 @@
       <div class="col-2">
         <q-img :src="avatarIRI" width="64px" height="64px"/>
       </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <div class="q-pa-md" style="max-width: 400px">
-        <div class="q-gutter-x-xs q-gutter-y-lg">
-          <q-btn color="blue" label="Button" v-for="n in 10" :key="n" />
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 </template>
@@ -95,7 +85,7 @@ export default {
     },
     setModel (val) {
       this.input = val
-      console.log('model set ' + val)
+      console.log(this.input)
     },
     clearInput () {
       this.input = ''
