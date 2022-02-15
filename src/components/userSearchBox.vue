@@ -39,9 +39,15 @@ export default {
   },
   computed: {
     avatarIRI: function () {
-      if (this.vscrollAcc) {
-        return 'https://images.hive.blog/u/' + this.vscrollAcc + '/avatar'
-      } else { return null }
+      if (this.vscrollAcc && this.vscrollAcc.length > 2) {
+        const re = /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
+        const validName = this.vscrollAcc.match(re)
+        if (validName) {
+          return 'https://images.hive.blog/u/' + this.vscrollAcc + '/avatar'
+        } else { return null }
+      } else {
+        return null
+      }
     }
   },
   props: ['username', 'label'],
