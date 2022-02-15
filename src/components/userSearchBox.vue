@@ -86,9 +86,6 @@ export default {
         }
       })
     },
-    setModel (val) {
-      this.input = val
-    },
     clearInput () {
       this.input = ''
       this.usernameSuggestions = []
