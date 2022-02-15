@@ -48,7 +48,6 @@ export default {
   methods: {
     setUsername (u) {
       this.hiveAccname = u
-      console.log(this.hiveAccname)
     }
   },
   mounted () {

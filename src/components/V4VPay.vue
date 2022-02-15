@@ -39,23 +39,39 @@
         </div>
       </div>
     </div>
-    <div>
-      <canvas id="qr-code"></canvas>
-    </div>
+    <q-dialog v-model="icon">
+      <q-card>
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Close icon</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+        <q-card-section>
+          <div>
+            <div id="qr-code2" ref="qrcode2"> </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <div class="p-pa-lg">
       <q-btn
         class="glossy"
         rounded
         color="primary"
         label="Send Lightning"
-        @click="getInvoice"
+        @click="openDialog"
         icon="bolt" />
+    </div>
+    <div>
+      <canvas id="qr-code"></canvas>
+      <div id="qr-code2" ref="qrcode2"> </div>
     </div>
   </div>
 </template>
 
 <script>
-import QRious from 'qrious'
+
+import QRCode from 'qr-code-styling'
 
 export default {
   name: 'V4VPay',
@@ -65,100 +81,85 @@ export default {
       amounts: ['1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountSats: '',
       amountUSD: '',
-      lightningInvoice: ''
+      lightningInvoice: '',
+      icon: false,
+      qrCode: new QRCode()
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
   methods: {
+    openDialog () {
+      this.icon = true
+      this.getInvoice()
+    },
     getInvoice () {
       // validation goes hideSplashscreen
-      if (!this.amountSats) { return }
+      // if (!this.amountSats) { return }
       // and then we call
-      const data = {
-        out: false,
-        amount: parseInt(this.amountSats),
-        memo: this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
-      }
-      const headers = {
-        'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
-      }
-      const url = 'http://umbrel.local:3007/api/v1/payments'
-
-      this.$axios({
-        method: 'POST',
-        url: url,
-        headers: headers,
-        data: data
-      }).then(response => {
-        console.log(data)
-        console.log('Payment Hash:    ' + response.data.payment_hash)
-        console.log('Payment Request: ' + response.data.payment_request)
-        console.log(response)
-        this.lightningInvoice = response.data.payment_request
-        const qrcode = new QRious({
-          level: 'H',
-          padding: 25,
-          size: 300,
-          element: document.getElementById('qr-code'),
-          value: this.lightningInvoice
-        })
-        console.log(qrcode)
+      this.lightningInvoice = 'lnbc10100n1p3qkmp2pp5mwaerj86c80088fm9a7lr32gvfxdff4n428c8jrhcjnndu20l2qsdzgvfexjctwdanxcmmwv3hkugruyphx7argd9hxwgrzw46zqum0d4jjpuyl5j3jqgmkx3mxzurscqzpgxqzjcsp546e9yawd2jgkntqkud099q3nlcx2m6879jnms26d73pz8qg53nrq9qyyssqpc4rqt00fjr3y4ed36ndgk76zwe2jfcrl3eql00w2ljtw2crev393jherxkw23t7ddrdypfuesp9yzxj2u5acrv568af6knsyldnvncpf3f55y'
+      this.qrCode = new QRCode({
+        width: 300,
+        height: 300,
+        type: 'svg',
+        data: this.lightningInvoice,
+        image: 'https://images.hive.blog/u/' + 'brianoflondon' + '/avatar',
+        dotsOptions: {
+          color: 'active',
+          type: 'rounded'
+        },
+        backgroundOptions: {
+          color: '#e9ebee'
+        },
+        imageOptions: {
+          crossOrigin: 'anonymous',
+          margin: 0
+        }
       })
+      console.log(this.qrCode)
+      this.qrCode.append(this.$refs.qrcode2)
 
-      // const endpoint = '/v1/fundraiser/'
-      // const params = {
-      //   fundraiser_id: 'yfu4zg'
+      // bypass all this for testing
+      // const data = {
+      //   out: false,
+      //   amount: parseInt(this.amountSats),
+      //   memo: this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
       // }
-      // const ans = this.tallyApiCall(params, endpoint)
-      // console.log(ans)
-
-      // this.$axios.post('https://api.tallyco.in/v1/fundraiser/', {
-      //   fundraiser_id: 'yfu4zg'
-      // }).then(function (response) {
+      // const headers = {
+      //   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+      // }
+      // const url = 'http://umbrel.local:3007/api/v1/payments'
+      // this.$axios({
+      //   method: 'POST',
+      //   url: url,
+      //   headers: headers,
+      //   data: data
+      // }).then(response => {
+      //   console.log(data)
+      //   console.log('Payment Hash:    ' + response.data.payment_hash)
+      //   console.log('Payment Request: ' + response.data.payment_request)
       //   console.log(response)
-      // })
-      // this.$axios({
-      //   method: 'post',
-      //   url: 'https://api.tallyco.in/v1/fundraiser/',
-      //   crossdomain: true,
-      //   params: {
-      //     fundraiser_id: 'yfu4zg'
-      //   }
-      // }).then((response) => {
-      //   console.log(response.data)
-      // }).catch((err) => {
-      //   console.error(err.message)
-      // })
-      // const tallyData = {
-      //   type: 'fundraiser',
-      //   id: 'yfu4zg',
-      //   satoshi_amount: parseInt(this.amountSats),
-      //   payment_method: 'ln',
-      //   message: 'brianoflondon'
-      // }
-      // const dataToSend = JSON.stringify(tallyData)
-      // console.log(tallyData)
-      // console.log(dataToSend)
-      // this.$axios({
-      //   method: 'post',
-      //   url: 'https://api.tallyco.in/v1/payment/request/',
-      //   data: tallyData
-      // }).then((response) => {
-      //   console.log(response.data)
-      //   console.log(response.data.error)
-      // }).catch((error) => { console.error(error) })
-      // this.$axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
-      // this.$axios.post('http://api.tallyco.in/v1/payment/request/', tallyData)
-      //   .then((response) => {
-      //     this.tallyResponse = response.data
-      //     console.log(this.tallyResponse.error)
-      //     console.log(this.tallyResponse.lightning_pay_request)
-      //     console.log(this.tallyResponse.lightning_invoice_id)
+      //   this.lightningInvoice = response.data.payment_request
+      //   const qrcode = new QRious({
+      //     level: 'H',
+      //     padding: 25,
+      //     size: 300,
+      //     element: document.getElementById('qr-code'),
+      //     value: this.lightningInvoice
       //   })
-      //   .catch((error) => {
-      //     console.log('Call to TallyCoin failed')
-      //     console.error(error)
-      //   })
+      //   console.log(qrcode)
+      // })
+    },
+    alert () {
+      this.$q.dialog({
+        title: 'Alert',
+        message: 'Some message'
+      }).onOk(() => {
+        // console.log('OK')
+      }).onCancel(() => {
+        // console.log('Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
     },
     buttonClick (index) {
       this.amountUSD = this.amounts[index]
