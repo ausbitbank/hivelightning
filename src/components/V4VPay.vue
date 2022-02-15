@@ -39,6 +39,9 @@
         </div>
       </div>
     </div>
+    <div>
+      <canvas id="qr-code"></canvas>
+    </div>
     <div class="p-pa-lg">
       <q-btn
         class="glossy"
@@ -52,6 +55,8 @@
 </template>
 
 <script>
+import QRious from 'qrious'
+
 export default {
   name: 'V4VPay',
   data () {
@@ -59,7 +64,8 @@ export default {
       tallyResponse: '',
       amounts: ['1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountSats: '',
-      amountUSD: ''
+      amountUSD: '',
+      lightningInvoice: ''
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
@@ -88,6 +94,15 @@ export default {
         console.log('Payment Hash:    ' + response.data.payment_hash)
         console.log('Payment Request: ' + response.data.payment_request)
         console.log(response)
+        this.lightningInvoice = response.data.payment_request
+        const qrcode = new QRious({
+          level: 'H',
+          padding: 25,
+          size: 300,
+          element: document.getElementById('qr-code'),
+          value: this.lightningInvoice
+        })
+        console.log(qrcode)
       })
 
       // const endpoint = '/v1/fundraiser/'
@@ -158,6 +173,8 @@ export default {
     recalcSATS () {
       this.amountSats = ((this.amountUSD / this.prices.bitcoin.usd) * 1e8).toFixed(0)
     }
+  },
+  components: {
   }
 }
 </script>

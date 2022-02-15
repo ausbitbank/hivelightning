@@ -39,9 +39,6 @@ export default {
   },
   computed: {
     avatarIRI: function () {
-      console.log(this.vscrollAcc)
-      console.log(this.usernameSuggestions[0])
-      console.log(this.input)
       if (this.vscrollAcc) {
         return 'https://images.hive.blog/u/' + this.vscrollAcc + '/avatar'
       } else { return null }
@@ -85,7 +82,6 @@ export default {
     },
     setModel (val) {
       this.input = val
-      console.log(this.input)
     },
     clearInput () {
       this.input = ''
