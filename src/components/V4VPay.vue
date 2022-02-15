@@ -39,16 +39,24 @@
         </div>
       </div>
     </div>
-    <q-dialog v-model="icon">
+    <q-dialog v-model="qrpopup">
       <q-card>
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Close icon</div>
+          <div class="text-h6">Send Lightning</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section>
           <div>
-            <div id="qr-code2" ref="qrcode2"> </div>
+            <div id="qr-code2" ref="qrcode2"></div>
+            <q-input
+              type="textarea"
+              id="copy-text"
+              :value="lightningInvoice"
+              autogrow
+              autofocus
+              @click="copySelect"
+              ref="copyText" />
           </div>
         </q-card-section>
       </q-card>
@@ -61,10 +69,6 @@
         label="Send Lightning"
         @click="openDialog"
         icon="bolt" />
-    </div>
-    <div>
-      <canvas id="qr-code"></canvas>
-      <div id="qr-code2" ref="qrcode2"> </div>
     </div>
   </div>
 </template>
@@ -82,27 +86,28 @@ export default {
       amountSats: '',
       amountUSD: '',
       lightningInvoice: '',
-      icon: false,
+      qrpopup: false,
       qrCode: new QRCode()
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
   methods: {
     openDialog () {
-      this.icon = true
-      this.getInvoice()
+      const success = this.getInvoice()
+      console.log(success)
+      this.qrpopup = true
     },
-    getInvoice () {
-      // validation goes hideSplashscreen
-      // if (!this.amountSats) { return }
-      // and then we call
-      this.lightningInvoice = 'lnbc10100n1p3qkmp2pp5mwaerj86c80088fm9a7lr32gvfxdff4n428c8jrhcjnndu20l2qsdzgvfexjctwdanxcmmwv3hkugruyphx7argd9hxwgrzw46zqum0d4jjpuyl5j3jqgmkx3mxzurscqzpgxqzjcsp546e9yawd2jgkntqkud099q3nlcx2m6879jnms26d73pz8qg53nrq9qyyssqpc4rqt00fjr3y4ed36ndgk76zwe2jfcrl3eql00w2ljtw2crev393jherxkw23t7ddrdypfuesp9yzxj2u5acrv568af6knsyldnvncpf3f55y'
+    copySelect (ev) {
+      console.log('copy select')
+      console.log(ev)
+    },
+    getInvoiceTesting () {
       this.qrCode = new QRCode({
         width: 300,
         height: 300,
         type: 'svg',
-        data: this.lightningInvoice,
-        image: 'https://images.hive.blog/u/' + 'brianoflondon' + '/avatar',
+        data: 'lnbc22570n1p3qh2l6pp5yud8hhcz4xtng4ekxqx05dkmk464gtpjld7kyyl97d2rhlg5cztsdz6vfexjctwdanxcmmwv3hkugruyrcfl9997z0eff0sn722tuyljjjlp8axsncflf5y7z06dp8sn7ngggprwc68vctswqcqzpgxqzjcsp5wfmx6rhkllzzh328uhdh3vg0d7julhra4qd54va4r9ca5jfqtq7s9qyyssqzgd0v7ddtx8plymtwt0u52kpevwj85t2uc253npng6h5n4gv5f8p5480nfdsgek22mffwksc7d6p95rjhxg4l2td0zhrkhhejccaucqq6wx6gq',
+        image: 'https://images.hive.blog/u/brianoflondon/avatar',
         dotsOptions: {
           color: 'active',
           type: 'rounded'
@@ -115,39 +120,60 @@ export default {
           margin: 0
         }
       })
+      console.log('are we here?')
       console.log(this.qrCode)
       this.qrCode.append(this.$refs.qrcode2)
-
-      // bypass all this for testing
-      // const data = {
-      //   out: false,
-      //   amount: parseInt(this.amountSats),
-      //   memo: this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
-      // }
-      // const headers = {
-      //   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
-      // }
-      // const url = 'http://umbrel.local:3007/api/v1/payments'
-      // this.$axios({
-      //   method: 'POST',
-      //   url: url,
-      //   headers: headers,
-      //   data: data
-      // }).then(response => {
-      //   console.log(data)
-      //   console.log('Payment Hash:    ' + response.data.payment_hash)
-      //   console.log('Payment Request: ' + response.data.payment_request)
-      //   console.log(response)
-      //   this.lightningInvoice = response.data.payment_request
-      //   const qrcode = new QRious({
-      //     level: 'H',
-      //     padding: 25,
-      //     size: 300,
-      //     element: document.getElementById('qr-code'),
-      //     value: this.lightningInvoice
-      //   })
-      //   console.log(qrcode)
-      // })
+    },
+    getInvoice () {
+      // validation goes hideSplashscreen
+      if (!this.amountSats) { return }
+      // and then we call
+      const data = {
+        out: false,
+        amount: parseInt(this.amountSats),
+        memo: this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
+      }
+      const headers = {
+        'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+      }
+      const url = 'http://umbrel.local:3007/api/v1/payments'
+      this.$axios({
+        method: 'POST',
+        url: url,
+        headers: headers,
+        data: data
+      }).then(response => {
+        console.log(data)
+        console.log('Payment Hash:    ' + response.data.payment_hash)
+        console.log('Payment Request: ' + response.data.payment_request)
+        console.log(response)
+        this.lightningInvoice = response.data.payment_request
+        this.qrCode = new QRCode({
+          width: 300,
+          height: 300,
+          type: 'svg',
+          data: this.lightningInvoice,
+          image: 'https://images.hive.blog/u/' + this.hiveAccname + '/avatar',
+          dotsOptions: {
+            color: 'active',
+            type: 'rounded'
+          },
+          backgroundOptions: {
+            color: '#e9ebee'
+          },
+          imageOptions: {
+            crossOrigin: 'anonymous',
+            margin: 0
+          }
+        })
+        console.log(this.qrCode)
+        this.qrCode.append(this.$refs.qrcode2)
+        return true
+      }).catch(err => {
+        console.error(err)
+        this.$q.notify('Failed to generate new invoice. Lighting is acting up!')
+        return false
+      })
     },
     alert () {
       this.$q.dialog({

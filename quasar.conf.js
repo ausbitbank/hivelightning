@@ -67,7 +67,6 @@ module.exports = function (/* ctx */) {
       // Added to make vs-code work
       devtool: 'source-map',
 
-
       // https://v1.quasar.dev/quasar-cli/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
       chainWebpack (chain) {
