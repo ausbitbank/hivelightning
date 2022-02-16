@@ -47,7 +47,14 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section>
-          <div id="qr-code" ref="qrcode" @click="copySelect"></div>
+            <div class="container image" id="qr-code" ref="qrcode" @click="copySelect">
+              <q-img
+                class="overlay"
+                v-if="paid"
+                src="icons8-check-circle.svg"
+                style="height: 300px; max-width: 300px"
+              />
+            </div>
           <div>Click image to copy invoice code</div>
           <q-input
             type="textarea"
@@ -60,9 +67,6 @@
         </q-card-section>
         <q-card-section>
           <q-linear-progress size="25px" :value="progress1" color="accent">
-            <div class="absolute-full flex flex-center">
-              <q-badge color="white" text-color="accent" :label="progressLabel1" />
-            </div>
           </q-linear-progress>
         </q-card-section>
       </q-card>
@@ -97,15 +101,52 @@
   </div>
 </template>
 
+<style scoped>
+* {box-sizing: border-box;}
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  background: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, 0.5); /* Black see-through */
+  color: #f1f1f1;
+  width: 100%;
+  transition: 1s ease;
+  opacity:1;
+}
+
+.container:hover .overlay {
+  opacity: 1;
+}
+
+</style>
+
 <script>
 
 import QRCode from 'qr-code-styling'
 import { copyToClipboard } from 'quasar'
+const umbrelUrl = 'http://umbrel.local:3007/api/v1/payments'
+const headers = {
+  'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+}
 
 export default {
   name: 'V4VPay',
   data () {
     return {
+      testing: false,
       tallyResponse: '',
       amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountSats: '',
@@ -115,8 +156,9 @@ export default {
       qrpopup: false,
       localHiveAccname: '',
       qrCode: new QRCode(),
-      progress1: '',
-      progressLabel1: ''
+      progress1: 0,
+      progressLabel1: '',
+      paid: false
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
@@ -131,50 +173,67 @@ export default {
         })
     },
     newInvoiceDialog () {
-      const testing = true
       this.qrpopup = true
       console.log('in my test')
       console.log('lightning invoice ' + this.lightningInvoice)
       this.localHiveAccname = this.hiveAccname
-      if (testing) {
+      if (this.testing) {
         this.localHiveAccname = 'brianoflondon'
         this.amountSats = 1333
       }
       // const goodbye = new Promise((resolve, reject) => {
       //   setTimeout(resolve, 10, 'goodbye')
       // })
-      const fetchInvoice = this.getInvoiceAsync('HIVE', testing)
+      const fetchInvoice = this.getInvoiceAsync('HIVE')
       Promise.all([fetchInvoice]).then((values, err) => {
         console.log('promises finished')
         console.log(values)
         this.getQRCode()
         this.qrCode.append(this.$refs.qrcode)
+        this.showCountdown()
       }).catch(err => {
         console.error(err)
         this.$q.notify(err)
       })
       console.log('Finished!')
-      this.showCountdown()
     },
     showCountdown () {
       // we simulate some progress here...
-      this.progress1 = 50
-      this.progressLabel1 = '600s'
-      let percentage = 50
-
+      const timeLimit = 300000 // Microsecond time limit
+      let percentage = 0
+      let elapsedTime = 100
+      const start = Date.now()
+      let n = 0
+      let paid = false
       const interval = setInterval(() => {
-        percentage = Math.min(100, percentage + Math.floor(Math.random() * 22))
+        // percentage = Math.min(100, percentage + Math.floor(Math.random() * 45))
+        elapsedTime = Math.floor(Date.now() - start)
+        percentage = elapsedTime / timeLimit
+        // console.log(elapsedTime)
+        // console.log(percentage)
+        this.progress1 = percentage
+        n += 1
+        if (n % 250 === 0) {
+          console.log('------------------>' + elapsedTime)
+          paid = this.checkInvoiceAsync(this.paymentHash)
+          Promise.all([paid]).then((values, err) => {
+            console.log(values)
+            this.paid = values[0]
+          }).catch(err => {
+            console.error(err)
+          })
+        }
         // if we are done, we're gonna close it
-        if (percentage === 100) {
+        if (this.paid | !this.qrpopup | elapsedTime > timeLimit) {
+          console.log('Ending the loop')
           clearInterval(interval)
-          console.log(percentage)
           setTimeout(() => {
             this.qrpopup = false
-          }, 600)
+          }, 500)
         }
-      }, 600)
+      }, 100)
     },
-    getInvoiceAsync (currency, testing) {
+    getInvoiceAsync (currency) {
       this.lightningInvoice = ''
       return new Promise((resolve, reject) => {
         if (!this.amountSats | !this.localHiveAccname) {
@@ -191,14 +250,14 @@ export default {
           amount: parseInt(this.amountSats),
           memo: memo
         }
-        const headers = {
-          'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
-        }
+        // const headers = {
+        //   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+        // }
         let url = ''
-        if (testing) {
+        if (this.testing) {
           url = 'https://reqbin.com/echo/post/json'
         } else {
-          url = 'http://umbrel.local:3007/api/v1/payments'
+          url = umbrelUrl
         }
         this.$axios({
           method: 'POST',
@@ -215,7 +274,7 @@ export default {
             this.paymentHash = response.data.payment_hash
           } else {
             console.log('TESTING' + this.lightningInvoice)
-            this.paymentHash = 'testingonly'
+            this.paymentHash = '752889a6db7ee84646a511f65fb01d0f174c42b83891ecc3e26c262f33029949'
             this.lightningInvoice = 'lnbc22570n1p3qh2l6pp5yud8hhcz4xtng4ekxqx05dkmk464gtpjld7kyyl97d2rhlg5cztsdz6vfexjctwdanxcmmwv3hkugruyrcfl9997z0eff0sn722tuyljjjlp8axsncflf5y7z06dp8sn7ngggprwc68vctswqcqzpgxqzjcsp5wfmx6rhkllzzh328uhdh3vg0d7julhra4qd54va4r9ca5jfqtq7s9qyyssqzgd0v7ddtx8plymtwt0u52kpevwj85t2uc253npng6h5n4gv5f8p5480nfdsgek22mffwksc7d6p95rjhxg4l2td0zhrkhhejccaucqq6wx6gq'
           }
           resolve(response)
@@ -260,6 +319,27 @@ export default {
     },
     recalcSATS () {
       this.amountSats = ((this.amountUSD / this.prices.bitcoin.usd) * 1e8).toFixed(0)
+    },
+    checkInvoiceAsync (paymentHash) {
+      const url = umbrelUrl + '/' + paymentHash
+      return new Promise((resolve, reject) => {
+        this.$axios({
+          method: 'GET',
+          url: url,
+          headers: headers
+        }).then((response, err) => {
+          console.log(response)
+          if (response.data.paid) {
+            console.log('it was paid!!!!')
+            this.paid = true
+            resolve(true)
+          }
+          resolve(false)
+        }).catch(err => {
+          console.error(err)
+          reject(err)
+        })
+      })
     }
   },
   components: {
