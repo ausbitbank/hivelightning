@@ -31,7 +31,7 @@
 
         <q-tab-panel name="info">
           <div class="text-h6">Info</div>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          Information about the service will go here.
         </q-tab-panel>
       </q-tab-panels>
     </q-card>

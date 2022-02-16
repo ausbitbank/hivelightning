@@ -229,7 +229,13 @@ export default {
           clearInterval(interval)
           setTimeout(() => {
             this.qrpopup = false
-          }, 500)
+            this.lightningInvoice = ''
+            this.paymentHash = ''
+            this.localHiveAccname = ''
+            this.qrCode = new QRCode()
+            this.amountSats = ''
+            this.paid = false
+          }, 1500)
         }
       }, 100)
     },
