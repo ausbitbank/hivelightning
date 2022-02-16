@@ -107,13 +107,14 @@ export default {
       amountUSD: '',
       lightningInvoice: '',
       qrpopup: false,
+      localHiveAccname: '',
       qrCode: new QRCode()
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
   methods: {
     openDialog (currency) {
-      const testing = false
+      const testing = true
       const success = this.getInvoice(currency, testing)
       if (success) {
         console.log(this.qrCode)
@@ -124,11 +125,9 @@ export default {
     },
     drawQRcode () {
       // Draws the QR code (if one exists) when the popup opens.
-      if (this.qrCode) {
-        this.qrCode.append(this.$ref.qrcode)
-      } else {
-        this.qrpopup = false
-      }
+      console.log('drawing popup')
+      console.log(this.qrCode, this.$refs.qrCode)
+      this.qrCode.append(this.$refs.qrcode)
     },
     copySelect (ev) {
       copyToClipboard(this.lightningInvoice)
@@ -140,25 +139,97 @@ export default {
         })
     },
     myTest () {
-      console.log('in my test')
       this.qrpopup = true
-      const goodbye = new Promise((resolve, reject) => {
-        setTimeout(resolve, 2000, 'goodbye')
-      })
-      let qrCode = new QRCode({
-        data: 'a message'
-      })
-      qrCode.append(this.$refs.testing)
-      Promise.all([goodbye]).then(values => {
+      console.log('in my test')
+      console.log('lightning invoice ' + this.lightningInvoice)
+      this.localHiveAccname = 'brianoflondon'
+      this.amountSats = 1333
+      // const goodbye = new Promise((resolve, reject) => {
+      //   setTimeout(resolve, 10, 'goodbye')
+      // })
+      const fetchInvoice = this.getInvoiceAsync('HIVE', true)
+      Promise.all([fetchInvoice]).then((values, err) => {
+        console.log('promises finished')
         console.log(values)
-        qrCode = new QRCode({ data: 'a different message' })
-        this.$refs.testing.innerHTML = ''
-        qrCode.append(this.$refs.qrcode)
+        this.getQRCode()
+        this.qrCode.append(this.$refs.qrcode)
+      }).catch(err => {
+        console.error(err)
       })
-      console.log(qrCode)
+      console.log('Finished!')
+    },
+    getInvoiceAsync (currency, testing) {
+      this.lightningInvoice = ''
+      return new Promise((resolve, reject) => {
+        if (!this.amountSats | !this.localHiveAccname) {
+          reject('Hive Account name or sending value not set')
+        }
+        let memo = this.localHiveAccname + ' | ' + this.memo + ' #v4vapp'
+        if (currency === 'HBD') {
+          memo += ' HBD'
+        }
+        const data = {
+          out: false,
+          amount: parseInt(this.amountSats),
+          memo: memo
+        }
+        const headers = {
+          'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+        }
+        let url = ''
+        if (testing) {
+          url = 'https://reqbin.com/echo/post/json'
+        } else {
+          url = 'http://umbrel.local:3007/api/v1/payments'
+        }
+        this.$axios({
+          method: 'POST',
+          url: url,
+          headers: headers,
+          data: data
+        }).then((response, err) => {
+          console.log(data)
+          console.log('Payment Hash:    ' + response.data.payment_hash)
+          console.log('Payment Request: ' + response.data.payment_request)
+          console.log(response)
+          if (response.data.payment_request) {
+            this.lightningInvoice = response.data.payment_request
+          } else {
+            console.log('TESTING' + this.lightningInvoice)
+            this.lightningInvoice = 'lnbc22570n1p3qh2l6pp5yud8hhcz4xtng4ekxqx05dkmk464gtpjld7kyyl97d2rhlg5cztsdz6vfexjctwdanxcmmwv3hkugruyrcfl9997z0eff0sn722tuyljjjlp8axsncflf5y7z06dp8sn7ngggprwc68vctswqcqzpgxqzjcsp5wfmx6rhkllzzh328uhdh3vg0d7julhra4qd54va4r9ca5jfqtq7s9qyyssqzgd0v7ddtx8plymtwt0u52kpevwj85t2uc253npng6h5n4gv5f8p5480nfdsgek22mffwksc7d6p95rjhxg4l2td0zhrkhhejccaucqq6wx6gq'
+          }
+          resolve(response)
+        }).catch(err => {
+          console.error(err)
+          this.qrpopup = false
+          this.$q.notify('Problems fetching new Lightning Invoice')
+        })
+      })
+    },
+    getQRCode () {
+      // sets the QR code based on current status
+      this.qrCode = new QRCode({
+        width: 300,
+        height: 300,
+        margin: 1,
+        type: 'svg',
+        data: this.lightningInvoice,
+        image: 'https://images.hive.blog/u/' + this.localHiveAccname + '/avatar',
+        dotsOptions: {
+          color: 'active',
+          type: 'rounded'
+        },
+        backgroundOptions: {
+          color: '#e9ebee'
+        },
+        imageOptions: {
+          crossOrigin: 'anonymous',
+          margin: 0
+        }
+      })
     },
     getInvoice (currency, testing) {
-      // validation goes hideSplashscreen
+      // validation goes here
       if (!this.amountSats | !this.hiveAccname) { return false }
       // and then we call
       let memo = this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
