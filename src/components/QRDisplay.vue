@@ -1,12 +1,26 @@
 <template>
   <q-dialog ref="dialog" @hide="onDialogHide">
+  <!-- <q-dialog v-model="qrpopup" @show="drawQRcode"> -->
     <q-card class="q-dialog-plugin">
-      <!--
-        ...content
-        ... use q-card-section for it?
-      -->
-
-      <!-- buttons example -->
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">Send Lightning</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+      <q-card-section>
+        <!-- <div>
+          <div id="qr-code" ref="qrcode" @click="copySelect"></div>
+          <div>Click image to copy invoice code</div>
+          <q-input
+            type="textarea"
+            id="copy-text"
+            :value="lightningInvoice"
+            autogrow
+            autofocus
+            @click="copySelect"
+            ref="copyText" />
+        </div> -->
+      </q-card-section>
       <q-card-actions align="right">
         <q-btn color="primary" label="OK" @click="onOKClick" />
         <q-btn color="primary" label="Cancel" @click="onCancelClick" />
@@ -17,10 +31,9 @@
 
 <script>
 export default {
-  props: {
+  props:
     // ...your custom props
-  },
-
+    ['lightningInvoice', 'hiveAccname', 'paymentHash'],
   methods: {
     // following method is REQUIRED
     // (don't change its name --> "show")

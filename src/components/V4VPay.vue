@@ -39,7 +39,7 @@
         </div>
       </div>
     </div>
-    <q-dialog v-model="qrpopup" @show="drawQRcode">
+    <q-dialog v-model="qrpopup">
       <q-card>
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Send Lightning</div>
@@ -47,18 +47,23 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section>
-          <div>
-            <div id="qr-code" ref="qrcode" @click="copySelect"></div>
-            <div>Click image to copy invoice code</div>
-            <q-input
-              type="textarea"
-              id="copy-text"
-              :value="lightningInvoice"
-              autogrow
-              autofocus
-              @click="copySelect"
-              ref="copyText" />
-          </div>
+          <div id="qr-code" ref="qrcode" @click="copySelect"></div>
+          <div>Click image to copy invoice code</div>
+          <q-input
+            type="textarea"
+            id="copy-text"
+            :value="lightningInvoice"
+            autogrow
+            autofocus
+            @click="copySelect"
+            ref="copyText" />
+        </q-card-section>
+        <q-card-section>
+          <q-linear-progress size="25px" :value="progress1" color="accent">
+            <div class="absolute-full flex flex-center">
+              <q-badge color="white" text-color="accent" :label="progressLabel1" />
+            </div>
+          </q-linear-progress>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -106,29 +111,16 @@ export default {
       amountSats: '',
       amountUSD: '',
       lightningInvoice: '',
+      paymentHash: '',
       qrpopup: false,
       localHiveAccname: '',
-      qrCode: new QRCode()
+      qrCode: new QRCode(),
+      progress1: '',
+      progressLabel1: ''
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
   methods: {
-    openDialog (currency) {
-      const testing = true
-      const success = this.getInvoice(currency, testing)
-      if (success) {
-        console.log(this.qrCode)
-      } else {
-        this.$q.notify('Problem creating invoice, try later.')
-      }
-      console.log(success)
-    },
-    // drawQRcode () {
-    //   // Draws the QR code (if one exists) when the popup opens.
-    //   console.log('drawing popup')
-    //   console.log(this.qrCode, this.$refs.qrCode)
-    //   this.qrCode.append(this.$refs.qrcode)
-    // },
     copySelect (ev) {
       copyToClipboard(this.lightningInvoice)
         .then(() => {
@@ -162,6 +154,25 @@ export default {
         this.$q.notify(err)
       })
       console.log('Finished!')
+      this.showCountdown()
+    },
+    showCountdown () {
+      // we simulate some progress here...
+      this.progress1 = 50
+      this.progressLabel1 = '600s'
+      let percentage = 50
+
+      const interval = setInterval(() => {
+        percentage = Math.min(100, percentage + Math.floor(Math.random() * 22))
+        // if we are done, we're gonna close it
+        if (percentage === 100) {
+          clearInterval(interval)
+          console.log(percentage)
+          setTimeout(() => {
+            this.qrpopup = false
+          }, 600)
+        }
+      }, 600)
     },
     getInvoiceAsync (currency, testing) {
       this.lightningInvoice = ''
@@ -201,8 +212,10 @@ export default {
           console.log(response)
           if (response.data.payment_request) {
             this.lightningInvoice = response.data.payment_request
+            this.paymentHash = response.data.payment_hash
           } else {
             console.log('TESTING' + this.lightningInvoice)
+            this.paymentHash = 'testingonly'
             this.lightningInvoice = 'lnbc22570n1p3qh2l6pp5yud8hhcz4xtng4ekxqx05dkmk464gtpjld7kyyl97d2rhlg5cztsdz6vfexjctwdanxcmmwv3hkugruyrcfl9997z0eff0sn722tuyljjjlp8axsncflf5y7z06dp8sn7ngggprwc68vctswqcqzpgxqzjcsp5wfmx6rhkllzzh328uhdh3vg0d7julhra4qd54va4r9ca5jfqtq7s9qyyssqzgd0v7ddtx8plymtwt0u52kpevwj85t2uc253npng6h5n4gv5f8p5480nfdsgek22mffwksc7d6p95rjhxg4l2td0zhrkhhejccaucqq6wx6gq'
           }
           resolve(response)
