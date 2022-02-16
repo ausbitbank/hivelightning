@@ -39,7 +39,7 @@
         </div>
       </div>
     </div>
-    <q-dialog v-model="qrpopup">
+    <q-dialog v-model="qrpopup" @show="drawQRcode">
       <q-card>
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Send Lightning</div>
@@ -62,14 +62,32 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    <div class="p-pa-lg">
-      <q-btn
-        class="glossy"
-        rounded
-        color="primary"
-        label="Send Lightning"
-        @click="openDialog"
-        icon="bolt" />
+    <div class="p-pa-sm">
+      <div class="row">
+        <div class="col-6">
+          <div class="q-pa-sm q-gutter-sm">
+            <q-btn
+              class="glossy q-pa-none"
+              rounded
+              color="primary"
+              label="Get Hive"
+              @click="myTest('HIVE')"
+              icon="bolt" />
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="q-pa-sm q-gutter-sm">
+            <q-btn
+              class="glossy q-pa-none"
+              rounded
+              color="secondary"
+              label="Get HBD"
+              @click="openDialog('HBD')"
+              icon="bolt" />
+          </div>
+        </div>
+        <div ref="testing"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -89,21 +107,28 @@ export default {
       amountUSD: '',
       lightningInvoice: '',
       qrpopup: false,
-      qrCode: null
+      qrCode: new QRCode()
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
   methods: {
-    openDialog () {
-      this.qrpopup = true
+    openDialog (currency) {
       const testing = false
-      const success = this.getInvoice(testing)
+      const success = this.getInvoice(currency, testing)
       if (success) {
         console.log(this.qrCode)
       } else {
         this.$q.notify('Problem creating invoice, try later.')
       }
       console.log(success)
+    },
+    drawQRcode () {
+      // Draws the QR code (if one exists) when the popup opens.
+      if (this.qrCode) {
+        this.qrCode.append(this.$ref.qrcode)
+      } else {
+        this.qrpopup = false
+      }
     },
     copySelect (ev) {
       copyToClipboard(this.lightningInvoice)
@@ -114,14 +139,36 @@ export default {
           console.error('Error while copying')
         })
     },
-    getInvoice (testing) {
+    myTest () {
+      console.log('in my test')
+      this.qrpopup = true
+      const goodbye = new Promise((resolve, reject) => {
+        setTimeout(resolve, 2000, 'goodbye')
+      })
+      let qrCode = new QRCode({
+        data: 'a message'
+      })
+      qrCode.append(this.$refs.testing)
+      Promise.all([goodbye]).then(values => {
+        console.log(values)
+        qrCode = new QRCode({ data: 'a different message' })
+        this.$refs.testing.innerHTML = ''
+        qrCode.append(this.$refs.qrcode)
+      })
+      console.log(qrCode)
+    },
+    getInvoice (currency, testing) {
       // validation goes hideSplashscreen
       if (!this.amountSats | !this.hiveAccname) { return false }
       // and then we call
+      let memo = this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
+      if (currency === 'HBD') {
+        memo += ' HBD'
+      }
       const data = {
         out: false,
         amount: parseInt(this.amountSats),
-        memo: this.hiveAccname + ' | ' + this.memo + ' #v4vapp'
+        memo: memo
       }
       const headers = {
         'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
