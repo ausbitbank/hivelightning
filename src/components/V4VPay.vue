@@ -139,15 +139,19 @@ export default {
         })
     },
     myTest () {
+      const testing = false
       this.qrpopup = true
       console.log('in my test')
       console.log('lightning invoice ' + this.lightningInvoice)
-      this.localHiveAccname = 'brianoflondon'
-      this.amountSats = 1333
+      this.localHiveAccname = this.hiveAccname
+      if (testing) {
+        this.localHiveAccname = 'brianoflondon'
+        this.amountSats = 1333
+      }
       // const goodbye = new Promise((resolve, reject) => {
       //   setTimeout(resolve, 10, 'goodbye')
       // })
-      const fetchInvoice = this.getInvoiceAsync('HIVE', true)
+      const fetchInvoice = this.getInvoiceAsync('HIVE', testing)
       Promise.all([fetchInvoice]).then((values, err) => {
         console.log('promises finished')
         console.log(values)
@@ -155,6 +159,7 @@ export default {
         this.qrCode.append(this.$refs.qrcode)
       }).catch(err => {
         console.error(err)
+        this.$q.notify(err)
       })
       console.log('Finished!')
     },
@@ -163,6 +168,8 @@ export default {
       return new Promise((resolve, reject) => {
         if (!this.amountSats | !this.localHiveAccname) {
           reject('Hive Account name or sending value not set')
+          this.qrpopup = false
+          throw new Error('Hive Account name or sending value not set')
         }
         let memo = this.localHiveAccname + ' | ' + this.memo + ' #v4vapp'
         if (currency === 'HBD') {
@@ -202,7 +209,7 @@ export default {
         }).catch(err => {
           console.error(err)
           this.qrpopup = false
-          this.$q.notify('Problems fetching new Lightning Invoice')
+          this.$q.notify('Problems fetching new Lightning Invoice: ' + err.message)
         })
       })
     },
