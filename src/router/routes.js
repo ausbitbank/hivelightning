@@ -8,7 +8,7 @@ const routes = [
     ]
   },
   {
-    path: '/tally/',
+    path: '/gethive/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Tally.vue') }
