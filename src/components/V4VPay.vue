@@ -1,13 +1,13 @@
 <template>
   <div>
-    <!-- Memo input -->
+    <!-- Amounts keyboard -->
     <div class="q-pa-md q-gutter-sm">
       <q-btn
         color="primary"
         class="btn-fixed-width"
         :name="index"
         :label="n"
-        v-for="(n, index) in amounts"
+        v-for="(n, index) in amountLabels"
         :key="index"
         @click="buttonClick(index)" />
     </div>
@@ -43,31 +43,33 @@
         </div>
       </div>
     </div>
-    <q-dialog v-model="qrpopup">
+    <!-- Popup with QR Code -->
+    <q-dialog
+      v-model="qrpopup"
+      @before-hide="clearData">
       <q-card>
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Send Lightning</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
+        <q-card-section class="row items-center">
+          <q-space />
+          <div class="container image" id="qr-code" ref="qrcode" @click="copySelect">
+            <q-img
+              class="overlay"
+              v-if="paid"
+              src="icons8-check-circle.svg"
+              style="height: 300px; max-width: 300px"
+            />
+          </div>
+          <q-space />
+        </q-card-section>
         <q-card-section>
-            <div class="container image" id="qr-code" ref="qrcode" @click="copySelect">
-              <q-img
-                class="overlay"
-                v-if="paid"
-                src="icons8-check-circle.svg"
-                style="height: 300px; max-width: 300px"
-              />
-            </div>
-          <div>Click image to copy invoice code</div>
-          <q-input
-            type="textarea"
-            id="copy-text"
-            :value="lightningInvoice"
-            autogrow
-            autofocus
-            @click="copySelect"
-            ref="copyText" />
+          <div class="text-center text-bold">Click image to copy invoice code</div>
+          <div class="text-center text-bold">Sending {{ amountSats }} sats</div>
+          <br/>
+          <div @click="copySelect" class="text-small text-body2 overflow" width="100%">{{ lightningInvoice }}</div>
         </q-card-section>
         <q-card-section>
           <q-linear-progress size="25px" :value="progress1" color="accent">
@@ -75,6 +77,7 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <!-- Hive Buttons -->
     <div class="p-pa-sm">
       <div class="row">
         <div class="col-6">
@@ -110,7 +113,10 @@
 </template>
 
 <style scoped>
-* {box-sizing: border-box;}
+/* * {box-sizing: border-box;} */
+.overflow {
+  overflow-wrap: break-word;
+}
 
 .container {
   position: relative;
@@ -119,6 +125,7 @@
 }
 
 .image {
+  align-self: center;
   display: block;
   width: 100%;
   height: auto;
@@ -127,6 +134,7 @@
 .overlay {
   position: absolute;
   bottom: 0;
+  border: 10px solid black;
   background: rgb(0, 0, 0);
   background: rgba(0, 0, 0, 0.5); /* Black see-through */
   color: #f1f1f1;
@@ -154,9 +162,10 @@ export default {
   name: 'V4VPay',
   data () {
     return {
-      testing: false,
+      testing: true,
       tallyResponse: '',
       amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
+      amountLabels: ['$0.50', '$1.00', '$2.00', '$5.00', '$10.00', '$15.00', '$20.00'],
       amountSats: '',
       amountUSD: '',
       amountHIVE: '',
@@ -219,7 +228,12 @@ export default {
     },
     showCountdown () {
       // we simulate some progress here...
-      const timeLimit = 300000 // Microsecond time limit
+      let timeLimit = 10
+      if (this.testing) {
+        timeLimit = 10000
+      } else {
+        timeLimit = 300000 // Microsecond time limit
+      }
       let percentage = 0
       let elapsedTime = 100
       const start = Date.now()
@@ -234,8 +248,15 @@ export default {
         this.progress1 = percentage
         n += 1
         if (n % 50 === 0) {
-          console.log('------------------>' + elapsedTime)
-          paid = this.checkInvoiceAsync(this.paymentHash)
+          if (this.testing) {
+            if (percentage < 80) {
+              paid = [false]
+            } else {
+              paid = [true]
+            }
+          } else {
+            paid = this.checkInvoiceAsync(this.paymentHash)
+          }
           Promise.all([paid]).then((values, err) => {
             console.log(values)
             this.paid = values[0]
@@ -249,16 +270,20 @@ export default {
           clearInterval(interval)
           setTimeout(() => {
             this.qrpopup = false
-            this.lightningInvoice = ''
-            this.paymentHash = ''
-            this.localHiveAccname = ''
-            this.qrCode = new QRCode()
-            this.amountSats = ''
-            this.amountUSD = ''
-            this.paid = false
-          }, 1500)
+          }, 50000000)
         }
       }, 200)
+    },
+    clearData () {
+      this.lightningInvoice = ''
+      this.paymentHash = ''
+      this.localHiveAccname = ''
+      this.qrCode = new QRCode()
+      this.amountSats = ''
+      this.amountUSD = ''
+      this.paid = false
+      this.recalcUSD()
+      this.recalcHive()
     },
     getInvoiceAsync (currency) {
       this.lightningInvoice = ''
@@ -352,7 +377,6 @@ export default {
     recalcHive () {
       this.amountHIVE = (this.amountUSDFees / this.prices.hive.usd).toFixed(2)
       this.amountHBD = (this.amountUSDFees / this.prices.hive_dollar.usd).toFixed(2)
-      console.log(this.amountHBD)
       if (!isNaN(this.amountHBD) | this.amountHBD <= 0) {
         this.hiveLabel = this.amountHIVE + ' Hive'
         this.hbdLabel = this.amountHBD + ' HBD'
@@ -401,7 +425,6 @@ export default {
   },
   beforeUpdate () {
     this.recalcUSD()
-    console.log('beforeUpdate')
   },
   updated () {
     this.recalcUSD()
