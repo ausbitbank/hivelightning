@@ -162,7 +162,7 @@ export default {
   name: 'V4VPay',
   data () {
     return {
-      testing: true,
+      testing: false,
       tallyResponse: '',
       amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountLabels: ['$0.50', '$1.00', '$2.00', '$5.00', '$10.00', '$15.00', '$20.00'],
@@ -203,8 +203,6 @@ export default {
         return
       }
       this.qrpopup = true
-      console.log('in my test')
-      console.log('lightning invoice ' + this.lightningInvoice)
       this.localHiveAccname = this.hiveAccname
       if (this.testing) {
         this.localHiveAccname = 'brianoflondon'
@@ -215,8 +213,6 @@ export default {
       // })
       const fetchInvoice = this.getInvoiceAsync('HIVE')
       Promise.all([fetchInvoice]).then((values, err) => {
-        console.log('promises finished')
-        console.log(values)
         this.getQRCode()
         this.qrCode.append(this.$refs.qrcode)
         this.showCountdown()
@@ -224,7 +220,7 @@ export default {
         console.error(err)
         this.$q.notify(err)
       })
-      console.log('Finished!')
+      // console.log('Finished!')
     },
     showCountdown () {
       // we simulate some progress here...
@@ -247,7 +243,7 @@ export default {
         // console.log(percentage)
         this.progress1 = percentage
         n += 1
-        if (n % 50 === 0) {
+        if (n % 50 === 0) { // frequency to check API for invoice paid
           if (this.testing) {
             if (percentage < 80) {
               paid = [false]
@@ -258,7 +254,6 @@ export default {
             paid = this.checkInvoiceAsync(this.paymentHash)
           }
           Promise.all([paid]).then((values, err) => {
-            console.log(values)
             this.paid = values[0]
           }).catch(err => {
             console.error(err)
@@ -266,13 +261,13 @@ export default {
         }
         // if we are done, we're gonna close it
         if (this.paid | !this.qrpopup | elapsedTime > timeLimit) {
-          console.log('Ending the loop')
+          // console.log('Ending the loop')
           clearInterval(interval)
           setTimeout(() => {
             this.qrpopup = false
-          }, 50000000)
+          }, 3000) // Close down time after success
         }
-      }, 200)
+      }, 200) // update time for progress
     },
     clearData () {
       this.lightningInvoice = ''
@@ -317,15 +312,15 @@ export default {
           headers: headers,
           data: data
         }).then((response, err) => {
-          console.log(data)
-          console.log('Payment Hash:    ' + response.data.payment_hash)
-          console.log('Payment Request: ' + response.data.payment_request)
-          console.log(response)
+          // console.log(data)
+          // console.log('Payment Hash:    ' + response.data.payment_hash)
+          // console.log('Payment Request: ' + response.data.payment_request)
+          // console.log(response)
           if (response.data.payment_request) {
             this.lightningInvoice = response.data.payment_request
             this.paymentHash = response.data.payment_hash
           } else {
-            console.log('TESTING' + this.lightningInvoice)
+            // console.log('TESTING' + this.lightningInvoice)
             this.paymentHash = '752889a6db7ee84646a511f65fb01d0f174c42b83891ecc3e26c262f33029949'
             this.lightningInvoice = 'lnbc22570n1p3qh2l6pp5yud8hhcz4xtng4ekxqx05dkmk464gtpjld7kyyl97d2rhlg5cztsdz6vfexjctwdanxcmmwv3hkugruyrcfl9997z0eff0sn722tuyljjjlp8axsncflf5y7z06dp8sn7ngggprwc68vctswqcqzpgxqzjcsp5wfmx6rhkllzzh328uhdh3vg0d7julhra4qd54va4r9ca5jfqtq7s9qyyssqzgd0v7ddtx8plymtwt0u52kpevwj85t2uc253npng6h5n4gv5f8p5480nfdsgek22mffwksc7d6p95rjhxg4l2td0zhrkhhejccaucqq6wx6gq'
           }
@@ -393,7 +388,7 @@ export default {
           url: url,
           headers: headers
         }).then((response, err) => {
-          console.log(response)
+          // console.log(response)
           if (response.data.paid) {
             console.log('it was paid!!!!')
             this.paid = true
