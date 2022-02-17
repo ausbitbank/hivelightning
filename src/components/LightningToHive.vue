@@ -1,7 +1,5 @@
 <template>
   <q-card flat class="text-center p-pa-md">
-    <div class="text-title text-center">
-    </div>
     <usersearch
       :username="hiveAccname"
       @selectUsername="setUsername"
@@ -12,7 +10,6 @@
         name="Memo"
         v-model="memo"
         label="Optional Memo to recipient (will be private)"
-        filled
         class="text-centre"
         />
       </div>

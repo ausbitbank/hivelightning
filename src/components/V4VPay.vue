@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Memo input -->
     <div class="q-pa-md q-gutter-sm">
       <q-btn
         color="primary"
@@ -16,8 +17,10 @@
         <div class="q-pa-sm q-gutter-sm">
           <q-input
             v-model="amountSats"
+            @input="recalcUSD"
             @keyup="recalcUSD"
             label="Amount (sats)"
+            :rules="[ amountSats => 1000 < amountSats && amountSats <= 100000 || 'From 1,000 to 100,000 sats']"
           >
             <template v-slot:prepend>
               <q-icon name="currency_bitcoin" />
@@ -29,6 +32,7 @@
         <div class="q-pa-sm q-gutter-sm">
           <q-input
             v-model="amountUSD"
+            @input="recalcSATS"
             @keyup="recalcSATS"
             label="Amount (USD)"
           >
@@ -79,8 +83,10 @@
               class="glossy q-pa-none"
               rounded
               color="primary"
-              label="Get Hive"
+              ref="hive_button"
+              :label="hiveLabel"
               @click="newInvoiceDialog('HIVE')"
+              @mouseenter="recalcHive"
               icon="bolt" />
           </div>
         </div>
@@ -90,8 +96,10 @@
               class="glossy q-pa-none"
               rounded
               color="secondary"
-              label="Get HBD"
+              ref="hbd_button"
+              :label="hbdLabel"
               @click="newInvoiceDialog('HBD')"
+              @mouseenter="recalcHive"
               icon="bolt" />
           </div>
         </div>
@@ -151,6 +159,10 @@ export default {
       amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountSats: '',
       amountUSD: '',
+      amountHIVE: '',
+      amountHBD: '',
+      hiveLabel: 'Hive',
+      hbdLabel: 'HBD',
       lightningInvoice: '',
       paymentHash: '',
       qrpopup: false,
@@ -158,10 +170,14 @@ export default {
       qrCode: new QRCode(),
       progress1: 0,
       progressLabel1: '',
-      paid: false
+      paid: false,
+      serviceStatus: null,
+      to: 'v4vapp'
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
+  computed: {
+  },
   methods: {
     copySelect (ev) {
       copyToClipboard(this.lightningInvoice)
@@ -173,6 +189,10 @@ export default {
         })
     },
     newInvoiceDialog () {
+      if (this.amountSats < 1000 || this.amountSats >= 100000) {
+        this.$q.notify('Sats must be between 1,000 and 100,000 per swap')
+        return
+      }
       this.qrpopup = true
       console.log('in my test')
       console.log('lightning invoice ' + this.lightningInvoice)
@@ -213,7 +233,7 @@ export default {
         // console.log(percentage)
         this.progress1 = percentage
         n += 1
-        if (n % 250 === 0) {
+        if (n % 50 === 0) {
           console.log('------------------>' + elapsedTime)
           paid = this.checkInvoiceAsync(this.paymentHash)
           Promise.all([paid]).then((values, err) => {
@@ -234,10 +254,11 @@ export default {
             this.localHiveAccname = ''
             this.qrCode = new QRCode()
             this.amountSats = ''
+            this.amountUSD = ''
             this.paid = false
           }, 1500)
         }
-      }, 100)
+      }, 200)
     },
     getInvoiceAsync (currency) {
       this.lightningInvoice = ''
@@ -316,15 +337,29 @@ export default {
     buttonClick (index) {
       this.amountUSD = this.amounts[index]
       this.recalcSATS()
-      console.log(this.amounts[index])
-      this.amountSats = ((this.amountUSD / this.prices.bitcoin.usd) * 1e8).toFixed(0)
+      this.recalcUSD()
     },
     recalcUSD () {
-      console.log(this.amountSats)
       this.amountUSD = ((this.amountSats / 1e8) * this.prices.bitcoin.usd).toFixed(2)
+      this.amountUSDFees = ((this.amountSatsFees / 1e8) * this.prices.bitcoin.usd).toFixed(2)
+      this.recalcHive()
     },
     recalcSATS () {
       this.amountSats = ((this.amountUSD / this.prices.bitcoin.usd) * 1e8).toFixed(0)
+      this.amountSatsFees = ((this.amountSats - this.conv_fee_sats) * (1 - this.conv_fee_percent)).toFixed(0)
+      this.recalcHive()
+    },
+    recalcHive () {
+      this.amountHIVE = (this.amountUSDFees / this.prices.hive.usd).toFixed(2)
+      this.amountHBD = (this.amountUSDFees / this.prices.hive_dollar.usd).toFixed(2)
+      console.log(this.amountHBD)
+      if (!isNaN(this.amountHBD) | this.amountHBD <= 0) {
+        this.hiveLabel = this.amountHIVE + ' Hive'
+        this.hbdLabel = this.amountHBD + ' HBD'
+      } else {
+        this.hiveLabel = 'Hive'
+        this.hbdLabel = 'HBD'
+      }
     },
     checkInvoiceAsync (paymentHash) {
       const url = umbrelUrl + '/' + paymentHash
@@ -346,9 +381,30 @@ export default {
           reject(err)
         })
       })
+    },
+    getServiceStatus (account) {
+      this.$hive.api.getAccountsAsync([account])
+        .then((response) => {
+          this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
+          this.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
+          this.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
+          this.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
+          this.overChargeSats = this.conv_fee_sats * 0.00000001
+          this.conv_fee_percent = parseFloat(this.serviceStatus.conv_fee_percent)
+        }).catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
     }
   },
   components: {
+  },
+  mounted () {
+    this.getServiceStatus(this.to)
+  },
+  beforeUpdate () {
+    this.recalcUSD()
+    console.log('beforeUpdate')
+  },
+  updated () {
+    this.recalcUSD()
   }
 }
 </script>

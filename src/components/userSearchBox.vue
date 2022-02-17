@@ -4,7 +4,7 @@
     <div class="col-10 q-pr-sm">
       <q-select
         clearable
-        auto-complete
+        autocomplete
         :value="input"
         use-input
         hide-selected
