@@ -153,7 +153,8 @@
 
 import QRCode from 'qr-code-styling'
 import { copyToClipboard } from 'quasar'
-const umbrelUrl = 'http://umbrel.local:3007/api/v1/payments'
+// const umbrelUrl = 'http://umbrel.local:3007/api/v1/payments'
+const apiUrl = 'http://localhost:1818/v1'
 const headers = {
   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
 }
@@ -304,7 +305,7 @@ export default {
         if (this.testing) {
           url = 'https://reqbin.com/echo/post/json'
         } else {
-          url = umbrelUrl
+          url = apiUrl + '/new_invoice'
         }
         this.$axios({
           method: 'POST',
@@ -381,7 +382,7 @@ export default {
       }
     },
     checkInvoiceAsync (paymentHash) {
-      const url = umbrelUrl + '/' + paymentHash
+      const url = apiUrl + '/check_invoice/' + paymentHash
       return new Promise((resolve, reject) => {
         this.$axios({
           method: 'GET',
