@@ -153,8 +153,7 @@
 
 import QRCode from 'qr-code-styling'
 import { copyToClipboard } from 'quasar'
-// const umbrelUrl = 'http://umbrel.local:3007/api/v1/payments'
-const apiUrl = 'http://localhost:1818/v1'
+
 const headers = {
   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
 }
@@ -182,7 +181,9 @@ export default {
       progressLabel1: '',
       paid: false,
       serviceStatus: null,
-      to: 'v4vapp'
+      to: 'v4vapp',
+      apiUrls: ['http://10.0.0.70:1818'],
+      apiUrl: ''
     }
   },
   props: ['prices', 'hiveAccname', 'memo'],
@@ -198,7 +199,7 @@ export default {
           console.error('Error while copying')
         })
     },
-    newInvoiceDialog () {
+    newInvoiceDialog (currency) {
       if (this.amountSats < 1000 || this.amountSats >= 100000) {
         this.$q.notify('Sats must be between 1,000 and 100,000 per swap')
         return
@@ -209,10 +210,7 @@ export default {
         this.localHiveAccname = 'brianoflondon'
         this.amountSats = 1333
       }
-      // const goodbye = new Promise((resolve, reject) => {
-      //   setTimeout(resolve, 10, 'goodbye')
-      // })
-      const fetchInvoice = this.getInvoiceAsync('HIVE')
+      const fetchInvoice = this.getInvoiceAsync(currency)
       Promise.all([fetchInvoice]).then((values, err) => {
         this.getQRCode()
         this.qrCode.append(this.$refs.qrcode)
@@ -227,7 +225,7 @@ export default {
       // we simulate some progress here...
       let timeLimit = 10
       if (this.testing) {
-        timeLimit = 10000
+        timeLimit = 100000
       } else {
         timeLimit = 300000 // Microsecond time limit
       }
@@ -245,15 +243,7 @@ export default {
         this.progress1 = percentage
         n += 1
         if (n % 50 === 0) { // frequency to check API for invoice paid
-          if (this.testing) {
-            if (percentage < 80) {
-              paid = [false]
-            } else {
-              paid = [true]
-            }
-          } else {
-            paid = this.checkInvoiceAsync(this.paymentHash)
-          }
+          paid = this.checkInvoiceAsync(this.paymentHash)
           Promise.all([paid]).then((values, err) => {
             this.paid = values[0]
           }).catch(err => {
@@ -298,20 +288,14 @@ export default {
           amount: parseInt(this.amountSats),
           memo: memo
         }
-        // const headers = {
-        //   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
-        // }
         let url = ''
-        if (this.testing) {
-          url = 'https://reqbin.com/echo/post/json'
-        } else {
-          url = apiUrl + '/new_invoice'
-        }
+        url = this.apiUrl + '/v1/new_invoice'
         this.$axios({
           method: 'POST',
           url: url,
           headers: headers,
-          data: data
+          data: data,
+          testing: this.testing
         }).then((response, err) => {
           // console.log(data)
           // console.log('Payment Hash:    ' + response.data.payment_hash)
@@ -382,12 +366,13 @@ export default {
       }
     },
     checkInvoiceAsync (paymentHash) {
-      const url = apiUrl + '/check_invoice/' + paymentHash
+      const url = this.apiUrl + '/v1/check_invoice/' + paymentHash
       return new Promise((resolve, reject) => {
         this.$axios({
           method: 'GET',
           url: url,
-          headers: headers
+          headers: headers,
+          params: { testing: this.testing }
         }).then((response, err) => {
           // console.log(response)
           if (response.data.paid) {
@@ -406,18 +391,42 @@ export default {
       this.$hive.api.getAccountsAsync([account])
         .then((response) => {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
+          console.log(this.serviceStatus)
           this.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
           this.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
           this.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
           this.overChargeSats = this.conv_fee_sats * 0.00000001
           this.conv_fee_percent = parseFloat(this.serviceStatus.conv_fee_percent)
-        }).catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
+          if (this.serviceStatus.v4v_api_iri) {
+            this.apiUrls.unshift(this.serviceStatus.v4v_api_iri)
+            console.log('URL list: ' + this.apiUrls)
+          }
+          this.validateApiUrl()
+        }).catch(() => { this.$q.notify('Failed to load service status from Hive account ' + account) })
+    },
+    validateApiUrl () {
+      // let success = ''
+      console.log(this.apiUrls)
+      this.apiUrls.forEach((url) => {
+        console.log('Checking: ' + url)
+        this.$axios({
+          method: 'GET',
+          url: url + '/v1'
+        }).then((response) => {
+          this.apiUrl = url
+          console.log('response: ' + response)
+          console.log('final api: ' + this.apiUrl)
+        }).catch((err) => {
+          console.log('Failure: ' + url)
+          console.log(err)
+        })
+      })
     }
   },
   components: {
   },
   mounted () {
-    this.getServiceStatus(this.to)
+    this.getServiceStatus('v4vapp')
   },
   beforeUpdate () {
     this.recalcUSD()
