@@ -79,7 +79,6 @@
     <div class="q-pa-md" style="max-width: 90%; margin:auto">
       <q-input
         v-model="invoice"
-        v-autofocus
         label="Lightning network invoice"
         filled
         autogrow
