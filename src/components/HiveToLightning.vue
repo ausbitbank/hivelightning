@@ -326,6 +326,7 @@ export default {
       this.checkInvoice()
     },
     checkInvoice () {
+      this.invoice = this.invoice.toLowerCase()
       if (this.invoice.startsWith('lightning:')) {
         this.invoice = this.invoice.slice(10)
       }
@@ -397,9 +398,9 @@ export default {
       this.$hive.api.getAccountsAsync([account])
         .then((response) => {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
-          this.conv_fee_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.conv_fee_sats)
-          this.minimum_invoice_payment_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.minimum_invoice_payment_sats)
-          this.maximum_invoice_payment_sats = parseFloat(JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig.maximum_invoice_payment_sats)
+          this.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
+          this.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
+          this.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
           this.overChargeSats = this.conv_fee_sats * 0.00000001
         })
         .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
