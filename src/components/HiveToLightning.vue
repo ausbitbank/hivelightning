@@ -256,7 +256,7 @@ export default {
     expiresIn: function () {
       const mins = -this.expiredMinutes
       if (mins > 60) {
-        return Math.floor(mins / 60) + ' hrs' + Math.floor(mins % 60) + ' mins'
+        return Math.floor(mins / 60) + ' h ' + Math.floor(mins % 60) + ' m'
       }
       return (mins + ' mins')
     },
