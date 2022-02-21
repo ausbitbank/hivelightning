@@ -154,8 +154,11 @@
 import QRCode from 'qr-code-styling'
 import { copyToClipboard } from 'quasar'
 
+// const headers = {
+//   'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+// }
 const headers = {
-  'X-Api-Key': '66090b27d802460a9800d29b5e943e2e'
+  'X-Api-Key': ''
 }
 
 export default {
