@@ -76,6 +76,7 @@
         </q-popup-proxy>
       </q-btn>
     </q-card>
+    <!-- Lightning invoice Text Box -->
     <div class="q-pa-md" style="max-width: 90%; margin:auto">
       <q-input
         v-model="invoice"
@@ -90,6 +91,12 @@
         :style="invoiceStyles"
       />
     </div>
+    <!-- End of Lightning invoice Text Box -->
+    <q-card>
+      <div>
+        <qrcodescanner></qrcodescanner>
+      </div>
+    </q-card>
     <div
       v-if="invoiceError.length"
       class="text-title text-centre invoice-error error">
@@ -207,8 +214,13 @@
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
+import QRScanner from 'src/components/QRScanner.vue'
+
 export default {
   name: 'HiveToLightning',
+  components: {
+    qrcodescanner: QRScanner
+  },
   data () {
     return {
       invoice: '',
