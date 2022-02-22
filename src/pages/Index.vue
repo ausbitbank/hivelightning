@@ -25,6 +25,8 @@
 
         <q-tab-panel name="l2h">
           <div class="text-h6">Lightning to Hive</div>
+          <h6>DEVELOPMENT ONLY</h6>
+          <p>WON'T TRANSFER Hive FUNDS but WILL Take Your Lightning!</p>
           <lighthive
           v-bind:prices="prices"></lighthive>
         </q-tab-panel>
