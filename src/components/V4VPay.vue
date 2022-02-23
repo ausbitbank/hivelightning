@@ -55,13 +55,15 @@
         </q-card-section>
         <q-card-section class="row items-center">
           <q-space />
-          <div class="container image" id="qr-code" ref="qrcode" @click="copySelect">
+          <div class="container image" id="qr-code" ref="qrcode" @click="copySelect" style="width: 300px">
             <q-img
               class="overlay"
               v-if="paid"
               src="icons8-check-circle.svg"
               style="height: 300px; max-width: 300px"
             />
+            <q-linear-progress size="5px" :value="progress1" color="accent" style="width: 300px">
+            </q-linear-progress>
           </div>
           <q-space />
         </q-card-section>
@@ -70,10 +72,6 @@
           <div class="text-center text-bold">Sending {{ amountSats }} sats</div>
           <br/>
           <div @click="copySelect" class="text-small text-body2 overflow" width="100%">{{ lightningInvoice }}</div>
-        </q-card-section>
-        <q-card-section>
-          <q-linear-progress size="25px" :value="progress1" color="accent">
-          </q-linear-progress>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -180,7 +178,7 @@ export default {
       qrpopup: false,
       localHiveAccname: '',
       qrCode: new QRCode(),
-      progress1: 0,
+      progress1: 100,
       progressLabel1: '',
       paid: false,
       serviceStatus: null,
