@@ -51,7 +51,7 @@ export default {
   name: 'PageIndex',
   data () {
     return {
-      tab: 'h2l'
+      tab: 'l2h'
     }
   },
   props: ['prices'],
