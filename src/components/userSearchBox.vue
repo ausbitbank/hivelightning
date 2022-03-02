@@ -20,7 +20,7 @@
         @input="$emit('selectUsername', input)" />
       </div>
       <div class="col-2">
-        <q-img :src="avatarIRI" width="64px" height="64px"/>
+        <q-img :src="avatarIRI" width="64px" height="64px" />
       </div>
   </div>
 </div>
@@ -46,7 +46,7 @@ export default {
           return 'https://images.hive.blog/u/' + this.vscrollAcc + '/avatar'
         } else { return null }
       } else {
-        return null
+        return 'unkown_hive_user.png'
       }
     }
   },
