@@ -214,12 +214,10 @@
 <script>
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
-import QRScanner from 'src/components/QRScanner.vue'
 
 export default {
   name: 'HiveToLightning',
   components: {
-    qrcodescanner: QRScanner
   },
   data () {
     return {
