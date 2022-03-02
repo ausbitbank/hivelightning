@@ -167,7 +167,7 @@ export default {
       tallyResponse: '',
       amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountLabels: ['$0.50', '$1.00', '$2.00', '$5.00', '$10.00', '$15.00', '$20.00'],
-      amountSats: '',
+      amountSats: 5000,
       amountUSD: '',
       amountHIVE: '',
       amountHBD: '',
@@ -243,7 +243,7 @@ export default {
         // console.log(percentage)
         this.progress1 = percentage
         n += 1
-        if (n % 50 === 0) { // frequency to check API for invoice paid
+        if (n % 10 === 0) { // frequency to check API for invoice paid
           paid = this.checkInvoiceAsync(this.paymentHash)
           Promise.all([paid]).then((values, err) => {
             this.paid = values[0]
@@ -266,7 +266,7 @@ export default {
       this.paymentHash = ''
       this.localHiveAccname = ''
       this.qrCode = new QRCode()
-      this.amountSats = ''
+      this.amountSats = 5000
       this.amountUSD = ''
       this.paid = false
       this.recalcUSD()
@@ -428,6 +428,7 @@ export default {
   },
   mounted () {
     this.getServiceStatus('v4vapp')
+    this.recalcUSD()
   },
   beforeUpdate () {
     this.recalcUSD()
