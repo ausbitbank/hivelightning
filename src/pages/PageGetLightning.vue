@@ -11,8 +11,6 @@
 
 export default {
   name: 'PageGetLightning',
-  data () {
-  },
   props: ['prices'],
   computed: {},
   mounted () {

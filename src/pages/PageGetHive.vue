@@ -11,8 +11,6 @@
 
 export default {
   name: 'PageGetHive',
-  data () {
-  },
   props: ['prices'],
   computed: {},
   mounted () {

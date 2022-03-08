@@ -1,9 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <router-view v-bind:prices="prices" />
+    <q-header bordered class="bg-white text-primary">
       <q-tabs
-        v-model="tab"
         dense
         class="text-grey"
         active-color="primary"
@@ -11,47 +9,36 @@
         align="justify"
         narrow-indicator
       >
-        <q-tab name="h2l" icon="bolt" label="Get Lightning" />
-        <q-tab name="l2h" icon="bolt" label="Get Hive" />
-        <q-tab name="info" icon="info" label="Info" />
+        <q-route-tab
+          name="getlightning"
+          icon="bolt"
+          to="/lnd"
+          label="Get Lightning" />
+        <q-route-tab name="gethive" icon="bolt" to= "/hive" label="Get Hive" />
+        <q-route-tab name="info" icon="info" to="/info" label="Info" />
       </q-tabs>
-      <q-separator />
-      <q-tab-panels v-model="tab" animated>
-        <q-tab-panel name="h2l">
-          <hivelight
-            v-bind:prices="prices"></hivelight>
-        </q-tab-panel>
-        <q-tab-panel name="l2h">
-          <lighthive
-          v-bind:prices="prices"></lighthive>
-        </q-tab-panel>
-
-        <q-tab-panel name="info">
-          <div class="text-h6">Info</div>
-          Information about the service will go here.
-        </q-tab-panel>
-      </q-tab-panels>
-
-    </q-page-container>
+    </q-header>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
       <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd.toFixed(2) }}
       <q-btn flat dense @click="$q.dark.toggle()" :color="$q.dark.isActive ? 'black' : 'white'" :title="$q.dark.isActive ? 'Change to light mode':'Change to dark mode'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" size="sm" />
     </q-footer>
+    <q-page-container>
+      <router-view v-bind:prices="prices" />
+    </q-page-container>
   </q-layout>
 </template>
 
 <script>
-import HiveToLightningVue from 'src/components/HiveToLightning.vue'
-import LightningToHiveVue from 'src/components/LightningToHive.vue'
+// import HiveToLightningVue from 'src/components/HiveToLightning.vue'
+// import LightningToHiveVue from 'src/components/LightningToHive.vue'
 
 export default {
   name: 'MainLayout',
   data () {
     return {
-      prices: null,
-      tab: 'l2h'
+      prices: null
     }
   },
   methods: {
@@ -77,8 +64,8 @@ export default {
     }
   },
   components: {
-    hivelight: HiveToLightningVue,
-    lighthive: LightningToHiveVue
+    // hivelight: HiveToLightningVue,
+    // lighthive: LightningToHiveVue
   },
   mounted () {
     this.$q.dark.set('auto')

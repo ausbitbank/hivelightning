@@ -10,9 +10,7 @@
 // import MainLayout from 'src/layouts/MainLayout.vue'
 
 export default {
-  name: 'PageGetHive',
-  data () {
-  },
+  name: 'PageInfo',
   props: ['prices'],
   computed: {},
   mounted () {
