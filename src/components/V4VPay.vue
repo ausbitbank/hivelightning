@@ -167,7 +167,7 @@ export default {
       tallyResponse: '',
       amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
       amountLabels: ['$0.50', '$1.00', '$2.00', '$5.00', '$10.00', '$15.00', '$20.00'],
-      amountSats: 5000,
+      amountSats: '',
       amountSatsFees: '',
       amountUSD: '',
       amountUSDFees: '',
@@ -264,7 +264,7 @@ export default {
       this.paymentHash = ''
       this.localHiveAccname = ''
       this.qrCode = new QRCode()
-      this.amountSats = 5000
+      this.amountSats = ''
       this.amountUSD = ''
       this.paid = false
       this.recalcUSD()
@@ -390,9 +390,6 @@ export default {
   components: {
   },
   mounted () {
-    console.log('v4vpay.vue')
-    console.log(this.prices)
-    console.log(this.serviceStatus)
     this.recalcUSD()
   },
   beforeUpdate () {

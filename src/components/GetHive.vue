@@ -6,7 +6,7 @@
       @selectUsername="setUsername"
       label="To account"></usersearch>
     <div>
-      <div>
+      <div class="q-pa-md">
         <q-input
         name="Memo"
         v-model="memo"
