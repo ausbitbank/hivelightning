@@ -18,6 +18,8 @@
         <v4vpay
           v-bind:prices="prices"
           v-bind:hiveAccname="hiveAccname"
+          v-bind:serviceStatus="serviceStatus"
+          v-bind:sendHiveTo="sendHiveTo"
           v-bind:memo="memo"
         />
       </div>
@@ -34,7 +36,7 @@ import V4VPay from 'src/components/V4VPay.vue'
 
 // import hive from '@hiveio/hive-js'
 export default {
-  name: 'LightningToHive',
+  name: 'GetHive',
   data () {
     return {
       hiveAccname: '',
@@ -42,14 +44,14 @@ export default {
       nameList: ''
     }
   },
-  props: ['prices'],
+  props: ['prices', 'sendHiveTo', 'serviceStatus'],
   methods: {
     setUsername (u) {
       this.hiveAccname = u
     }
   },
   mounted () {
-    console.log('lightningtohive')
+    console.log('Get Hive')
   },
   components: {
     usersearch: userSearchBoxVue,

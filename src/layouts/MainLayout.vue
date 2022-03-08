@@ -44,8 +44,9 @@ export default {
   data () {
     return {
       prices: null,
-      sendHiveTo: 'v4vapp',
-      serviceStatus: null
+      sendHiveTo: '',
+      serviceStatus: null,
+      apiURLs: ['http://localhost:1818/']
     }
   },
   methods: {
@@ -57,6 +58,7 @@ export default {
           if (this.prices.hive_dollar.usd > 1.10) {
             this.prices.hive_dollar.usd = 1.10
           }
+          console.log('Prices fetched from coingecko')
         })
         .catch(() => { console.log('Failed to load data from coingecko api') })
     },
@@ -69,27 +71,60 @@ export default {
         return null
       }
     },
+    validateApiUrl () {
+      // let success = ''
+      console.log(this.apiURLs)
+      this.apiURLs.forEach((url) => {
+        console.log('Checking: ' + url)
+        this.$axios({
+          method: 'GET',
+          url: url + '/v1'
+        }).then((response) => {
+          this.serviceStatus.apiUrl = url
+          console.log('response: ' + response)
+          console.log('final api: ' + this.serviceStatus.apiUrl)
+        }).catch((err) => {
+          console.log('Failure: ' + url)
+          console.log(err)
+        })
+      })
+    },
     getServiceStatus (account) {
-      console.log('getting service status for ', account)
       this.$hive.api.getAccountsAsync([account])
         .then((response) => {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
-          this.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
-          this.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
-          this.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
-          this.overChargeSats = this.conv_fee_sats * 0.00000001
-        })
-        .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
+          this.serviceStatus.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
+          this.serviceStatus.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
+          this.serviceStatus.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
+          this.serviceStatus.overChargeSats = this.serviceStatus.conv_fee_sats * 0.00000001
+          this.serviceStatus.conv_fee_percent = parseFloat(this.serviceStatus.conv_fee_percent)
+          console.log(this.serviceStatus)
+          console.log(this.serviceStatus.v4v_api_iri)
+          if (this.serviceStatus.v4v_api_iri) {
+            console.log(this.apiURLs)
+            this.apiURLs.unshift(this.serviceStatus.v4v_api_iri)
+            console.log('URL list: ' + this.apiURLs)
+          }
+          this.validateApiUrl()
+          console.log(this.serviceStatus)
+        }).catch(() => { this.$q.notify('Failed to load service status from Hive account ' + account) })
+    },
+    setSendHiveTo () {
+      console.log('Write function to set the right sendTo address')
+      this.sendHiveTo = 'v4vapp'
     }
   },
   components: {
     // hivelight: HiveToLightningVue,
     // lighthive: LightningToHiveVue
   },
-  mounted () {
-    this.$q.dark.set('auto')
+  beforeMount () {
+    this.setSendHiveTo()
     this.getPrices()
     this.getServiceStatus(this.sendHiveTo)
+  },
+  mounted () {
+    this.$q.dark.set('auto')
   }
 
 }

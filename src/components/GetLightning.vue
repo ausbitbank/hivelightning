@@ -237,7 +237,7 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hiveBtc = this.prices.hive.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = ((sats + this.overChargeSats) / hiveBtc) * this.overChargeMultiplier
+        const cost = ((sats + this.serviceStatus.overChargeSats) / hiveBtc) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -245,7 +245,7 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hbdUsd = this.prices.hive_dollar.usd
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = (((sats + this.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
+        const cost = (((sats + this.serviceStatus.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -356,12 +356,12 @@ export default {
           this.invoiceError = ('This invoice expired  ' + this.expiredMinutes + ' minutes ago')
           // this.$q.notify('This invoice expired  ' + expiredMinutes + ' minutes ago')
           this.decodedInvoice = null
-        } else if (this.decodedInvoice.satoshis < this.minimum_invoice_payment_sats) {
-          this.invoiceError = ('This invoice too small ' + this.decodedInvoice.satoshis + ' is less than minimum: ' + this.minimum_invoice_payment_sats)
+        } else if (this.decodedInvoice.satoshis < this.serviceStatus.minimum_invoice_payment_sats) {
+          this.invoiceError = ('This invoice too small ' + this.decodedInvoice.satoshis + ' is less than minimum: ' + this.serviceStatus.minimum_invoice_payment_sats)
           this.decodedInvoice = null
           // this.$q.notify(this.invoiceError)
-        } else if (this.decodedInvoice.satoshis > this.maximum_invoice_payment_sats) {
-          this.invoiceError = ('This invoice too large ' + this.decodedInvoice.satoshis + ' is greater than maximum: ' + this.maximum_invoice_payment_sats)
+        } else if (this.decodedInvoice.satoshis > this.serviceStatus.maximum_invoice_payment_sats) {
+          this.invoiceError = ('This invoice too large ' + this.decodedInvoice.satoshis + ' is greater than maximum: ' + this.serviceStatus.maximum_invoice_payment_sats)
           this.decodedInvoice = null
           // this.$q.notify(this.invoiceError)
         } else {
@@ -387,7 +387,11 @@ export default {
       console.log(amount, token)
       const user = ''
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.sendHiveTo, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
-      if (success) { this.$q.notify('Payment sent!'); this.invoice = '' }
+      if (success) {
+        this.$q.notify('Payment sent!')
+        this.invoice = ''
+        this.decodedInvoice = null
+      }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },

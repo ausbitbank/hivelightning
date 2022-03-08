@@ -1,10 +1,10 @@
 <template>
   <q-page class="flex flex-center">
-    <gethive
+    <getlightning
       v-bind:prices="prices"
       :sendHiveTo="sendHiveTo"
       :serviceStatus="serviceStatus"
-      ></gethive>
+      ></getlightning>
   </q-page>
 </template>
 <style scoped>
@@ -20,7 +20,7 @@ export default {
   mounted () {
   },
   components: {
-    gethive: GetLightningVue
+    getlightning: GetLightningVue
   }
 }
 </script>

@@ -1,22 +1,26 @@
 <template>
   <q-page class="flex flex-center">
-    <h5>get hive page</h5>
+    <gethive
+      v-bind:prices="prices"
+      :sendHiveTo="sendHiveTo"
+      :serviceStatus="serviceStatus"
+    ></gethive>
   </q-page>
 </template>
 <style scoped>
 </style>
 
 <script>
-// import MainLayout from 'src/layouts/MainLayout.vue'
+import GetHiveVue from 'src/components/GetHive.vue'
 
 export default {
   name: 'PageGetHive',
-  props: ['prices'],
+  props: ['prices', 'sendHiveTo', 'serviceStatus'],
   computed: {},
   mounted () {
   },
   components: {
-    // mainlayout: MainLayout
+    gethive: GetHiveVue
   }
 }
 </script>
