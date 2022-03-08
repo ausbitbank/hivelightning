@@ -1,22 +1,24 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header bordered class="bg-white text-primary">
-      <q-tabs
-        dense
-        class="text-grey"
-        active-color="primary"
-        indicator-color="primary"
-        align="justify"
-        narrow-indicator
-      >
-        <q-route-tab
-          name="getlightning"
-          icon="bolt"
-          to="/lnd"
-          label="Get Lightning" />
-        <q-route-tab name="gethive" icon="bolt" to= "/hive" label="Get Hive" />
-        <q-route-tab name="info" icon="info" to="/info" label="Info" />
-      </q-tabs>
+    <q-header bordered>
+      <q-toolbar>
+        <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'"
+          style="max-height: 50px; max-width: 100px" />
+        <q-tabs
+          dense
+          active-bg-color="amber-10"
+          align="justify"
+          narrow-indicator
+        >
+          <q-route-tab
+            name="getlightning"
+            icon="bolt"
+            to="/lnd"
+            label="Get Lightning" />
+          <q-route-tab name="gethive" icon="bolt" to= "/hive" label="Get Hive" />
+          <q-route-tab name="info" icon="info" to="/info" label="Info" />
+        </q-tabs>
+      </q-toolbar>
     </q-header>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}

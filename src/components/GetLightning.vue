@@ -1,6 +1,5 @@
 <template>
   <q-card flat class="text-center q-pa-md">
-    <q-img :src="$q.dark.isActive ? 'hivelightning-dark.png' : 'hivelightning-light.png'" style="margin:auto" />
     <div class="text-title text-center">
       Convert <i class="pi pi-hiveio"></i> Hive or HBD to <i class="bolt"></i> Lightning
     </div>
@@ -211,7 +210,7 @@ import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 
 export default {
-  name: 'HiveToLightning',
+  name: 'GetLightning',
   components: {
   },
   data () {
@@ -355,7 +354,6 @@ export default {
         const dddd = Date.now() / 1000
         const expiredSeconds = dddd - this.decodedInvoice.timeExpireDate
         this.expiredMinutes = parseInt(expiredSeconds / 60)
-
         if (dddd > this.decodedInvoice.timeExpireDate) {
           this.invoiceError = ('This invoice expired  ' + this.expiredMinutes + ' minutes ago')
           // this.$q.notify('This invoice expired  ' + expiredMinutes + ' minutes ago')
@@ -370,7 +368,7 @@ export default {
           // this.$q.notify(this.invoiceError)
         } else {
           this.invoiceError = ''
-          console.log('No errors')
+          console.log('No LND Invoice errors')
         }
       } else {
         this.invoiceError = ('Not a valid Lightning Invoice')
@@ -388,6 +386,7 @@ export default {
       }
     },
     async sendKeychain (amount, token) {
+      console.log(amount, token)
       const user = ''
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
       if (success) { this.$q.notify('Payment sent!'); this.invoice = '' }

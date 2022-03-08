@@ -1,13 +1,13 @@
 <template>
   <q-page class="flex flex-center">
-    <h5>get lightning page</h5>
+    <gethive v-bind:prices="prices"></gethive>
   </q-page>
 </template>
 <style scoped>
 </style>
 
 <script>
-// import MainLayout from 'src/layouts/MainLayout.vue'
+import GetLightningVue from 'src/components/GetLightning.vue'
 
 export default {
   name: 'PageGetLightning',
@@ -16,7 +16,7 @@ export default {
   mounted () {
   },
   components: {
-    // mainlayout: MainLayout
+    gethive: GetLightningVue
   }
 }
 </script>
