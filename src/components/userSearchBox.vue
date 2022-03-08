@@ -5,11 +5,11 @@
       <q-select
         clearable
         autocomplete
+        hide-selected
         :value="input"
         use-input
-        hide-selected
         fill-input
-        input-debounce="100"
+        input-debounce="10"
         v-model="input"
         :label="label"
         :options="usernameSuggestions"
@@ -39,6 +39,7 @@ export default {
   },
   computed: {
     avatarIRI: function () {
+      console.log(this.usernameSuggestions)
       if (this.vscrollAcc && this.vscrollAcc.length > 2) {
         const re = /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
         const validName = this.vscrollAcc.match(re)
@@ -63,6 +64,7 @@ export default {
       })
     },
     virtualScroll (obj) {
+      console.log(obj)
       this.vscrollAcc = obj
     },
     abortFilterFn () {
