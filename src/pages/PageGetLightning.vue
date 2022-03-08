@@ -1,6 +1,10 @@
 <template>
   <q-page class="flex flex-center">
-    <gethive v-bind:prices="prices"></gethive>
+    <gethive
+      v-bind:prices="prices"
+      :sendHiveTo="sendHiveTo"
+      :serviceStatus="serviceStatus"
+      ></gethive>
   </q-page>
 </template>
 <style scoped>
@@ -11,7 +15,7 @@ import GetLightningVue from 'src/components/GetLightning.vue'
 
 export default {
   name: 'PageGetLightning',
-  props: ['prices'],
+  props: ['prices', 'sendHiveTo', 'serviceStatus'],
   computed: {},
   mounted () {
   },

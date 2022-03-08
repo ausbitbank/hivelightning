@@ -97,14 +97,14 @@
       {{ invoiceError }}</div>
     <div class="text-title text-center">
       <i class="pi pi-hiveio"></i>
-      Using exchange run by <b>@{{ to }}</b>
+      Using exchange run by <b>@{{ sendHiveTo }}</b>
       <div q-pa-sm v-if="serviceStatus" class="text-caption">Exchange Status:
         <span v-if="serviceStatus.closed_for_maintenance === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
         <span v-else-if="serviceStatus.closed_for_maintenance === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
         <q-btn icon="info" color="blue" flat dense size="sm" title="Show full exchange settings">
           <q-popup-proxy>
             <q-card flat class="text-center q-pa-sm">
-              <div class="text-title text-bold">Exchange Settings for {{ to }}</div>
+              <div class="text-title text-bold">Exchange Settings for {{ sendHiveTo }}</div>
               <div v-for="line in Object.keys(serviceStatus)" :key="line">
                 <span v-if="line === 'dynamic_fees_url'">{{ line}} : <a :href="getHiveLink(serviceStatus[line])" target="_blank">{{ serviceStatus[line] }}</a></span>
                 <span v-else>{{ line}} : {{ serviceStatus[line] }}</span>
@@ -220,12 +220,10 @@ export default {
       expiredMinutes: null,
       invoiceError: '',
       overChargeSats: 1000 * 0.00000001,
-      overChargeMultiplier: 1.05, // 15% overcharge, change is returned
-      to: 'v4vapp',
-      serviceStatus: null
+      overChargeMultiplier: 1.05 // 15% overcharge, change is returned
     }
   },
-  props: ['prices'],
+  props: ['prices', 'sendHiveTo', 'serviceStatus'],
   directives: {
     autofocus: {
       inserted (el) {
@@ -388,31 +386,19 @@ export default {
     async sendKeychain (amount, token) {
       console.log(amount, token)
       const user = ''
-      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.to, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
+      const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.sendHiveTo, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
       if (success) { this.$q.notify('Payment sent!'); this.invoice = '' }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },
     sendHivesigner (amount, token) {
-      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.to + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice + '%20lnd.v4v.app'
+      const dest = 'https://hivesigner.com/sign/transfer?to=' + this.sendHiveTo + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice + '%20lnd.v4v.app'
       window.open(dest, '_blank')
       this.invoice = ''
-    },
-    getServiceStatus (account) {
-      this.$hive.api.getAccountsAsync([account])
-        .then((response) => {
-          this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
-          this.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
-          this.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
-          this.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
-          this.overChargeSats = this.conv_fee_sats * 0.00000001
-        })
-        .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
     },
     getHiveLink (authperm) { return 'https://hivel.ink/' + authperm }
   },
   mounted () {
-    this.getServiceStatus(this.to)
     if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
   }
 }

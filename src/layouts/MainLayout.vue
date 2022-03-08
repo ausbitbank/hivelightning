@@ -27,7 +27,10 @@
       <q-btn flat dense @click="$q.dark.toggle()" :color="$q.dark.isActive ? 'black' : 'white'" :title="$q.dark.isActive ? 'Change to light mode':'Change to dark mode'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" size="sm" />
     </q-footer>
     <q-page-container>
-      <router-view v-bind:prices="prices" />
+      <router-view
+        v-bind:prices="prices"
+        :serviceStatus="serviceStatus"
+        :sendHiveTo="sendHiveTo" />
     </q-page-container>
   </q-layout>
 </template>
@@ -40,7 +43,9 @@ export default {
   name: 'MainLayout',
   data () {
     return {
-      prices: null
+      prices: null,
+      sendHiveTo: 'v4vapp',
+      serviceStatus: null
     }
   },
   methods: {
@@ -63,6 +68,18 @@ export default {
       } else {
         return null
       }
+    },
+    getServiceStatus (account) {
+      console.log('getting service status for ', account)
+      this.$hive.api.getAccountsAsync([account])
+        .then((response) => {
+          this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
+          this.conv_fee_sats = parseFloat(this.serviceStatus.conv_fee_sats)
+          this.minimum_invoice_payment_sats = parseFloat(this.serviceStatus.minimum_invoice_payment_sats)
+          this.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
+          this.overChargeSats = this.conv_fee_sats * 0.00000001
+        })
+        .catch(() => { this.$q.notify('Failed to load service status from Hive account ' + this.account) })
     }
   },
   components: {
@@ -72,6 +89,7 @@ export default {
   mounted () {
     this.$q.dark.set('auto')
     this.getPrices()
+    this.getServiceStatus(this.sendHiveTo)
   }
 
 }
