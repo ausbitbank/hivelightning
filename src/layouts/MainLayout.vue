@@ -46,7 +46,7 @@ export default {
       prices: null,
       sendHiveTo: '',
       serviceStatus: null,
-      apiURLs: ['http://localhost:1818/']
+      apiURLs: ['']
     }
   },
   methods: {
