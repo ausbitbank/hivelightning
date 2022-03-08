@@ -2,6 +2,36 @@
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
       <router-view v-bind:prices="prices" />
+      <q-tabs
+        v-model="tab"
+        dense
+        class="text-grey"
+        active-color="primary"
+        indicator-color="primary"
+        align="justify"
+        narrow-indicator
+      >
+        <q-tab name="h2l" icon="bolt" label="Get Lightning" />
+        <q-tab name="l2h" icon="bolt" label="Get Hive" />
+        <q-tab name="info" icon="info" label="Info" />
+      </q-tabs>
+      <q-separator />
+      <q-tab-panels v-model="tab" animated>
+        <q-tab-panel name="h2l">
+          <hivelight
+            v-bind:prices="prices"></hivelight>
+        </q-tab-panel>
+        <q-tab-panel name="l2h">
+          <lighthive
+          v-bind:prices="prices"></lighthive>
+        </q-tab-panel>
+
+        <q-tab-panel name="info">
+          <div class="text-h6">Info</div>
+          Information about the service will go here.
+        </q-tab-panel>
+      </q-tab-panels>
+
     </q-page-container>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
@@ -13,11 +43,15 @@
 </template>
 
 <script>
+import HiveToLightningVue from 'src/components/HiveToLightning.vue'
+import LightningToHiveVue from 'src/components/LightningToHive.vue'
+
 export default {
   name: 'MainLayout',
   data () {
     return {
-      prices: null
+      prices: null,
+      tab: 'l2h'
     }
   },
   methods: {
@@ -41,6 +75,10 @@ export default {
         return null
       }
     }
+  },
+  components: {
+    hivelight: HiveToLightningVue,
+    lighthive: LightningToHiveVue
   },
   mounted () {
     this.$q.dark.set('auto')

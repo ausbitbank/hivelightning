@@ -1,5 +1,6 @@
 <template>
   <q-card flat class="text-center p-pa-md">
+    <div class="text-h6">Lightning to Hive</div>
     <usersearch
       :username="hiveAccname"
       @selectUsername="setUsername"

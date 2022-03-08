@@ -92,11 +92,6 @@
       />
     </div>
     <!-- End of Lightning invoice Text Box -->
-    <q-card>
-      <div>
-        <qrcodescanner></qrcodescanner>
-      </div>
-    </q-card>
     <div
       v-if="invoiceError.length"
       class="text-title text-centre invoice-error error">

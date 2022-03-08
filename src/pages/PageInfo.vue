@@ -1,18 +1,16 @@
 <template>
   <q-page class="flex flex-center">
-    <q-card flat class="text-center q-pa-md">
-      <mainlayout />
-    </q-card>
+    <h5>Info Page</h5>
   </q-page>
 </template>
 <style scoped>
 </style>
 
 <script>
-import MainLayout from 'src/layouts/MainLayout.vue'
+// import MainLayout from 'src/layouts/MainLayout.vue'
 
 export default {
-  name: 'PageIndex',
+  name: 'PageGetHive',
   data () {
   },
   props: ['prices'],
@@ -20,7 +18,7 @@ export default {
   mounted () {
   },
   components: {
-    mainlayout: MainLayout
+    // mainlayout: MainLayout
   }
 }
 </script>
