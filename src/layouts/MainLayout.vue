@@ -30,7 +30,8 @@
       <router-view
         v-bind:prices="prices"
         :serviceStatus="serviceStatus"
-        :sendHiveTo="sendHiveTo" />
+        :sendHiveTo="sendHiveTo"
+      />
     </q-page-container>
   </q-layout>
 </template>
@@ -125,6 +126,7 @@ export default {
   },
   mounted () {
     this.$q.dark.set('auto')
+    console.log(window.location)
   }
 
 }

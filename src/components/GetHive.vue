@@ -52,6 +52,13 @@ export default {
   },
   mounted () {
     console.log('Get Hive')
+    console.log(this.$route.params)
+    if (this.$route.params.hiveAccname) {
+      this.hiveAccname = this.$route.params.hiveAccname
+    }
+    if (this.$route.params.memo) {
+      this.memo = this.$route.params.memo
+    }
   },
   components: {
     usersearch: userSearchBoxVue,
