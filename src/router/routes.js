@@ -1,6 +1,3 @@
-
-import pageGetHive from 'pages/PageGetHive'
-
 const routes = [
   {
     path: '/',
@@ -11,7 +8,7 @@ const routes = [
       { path: 'hive', component: () => import('pages/PageGetHive.vue') },
       { path: 'info', component: () => import('pages/PageInfo.vue') },
       { path: 'hive/@:hiveAccname', component: () => import('pages/PageGetHive.vue') },
-      { path: 'hive/@:hiveAccname/:memo', component: pageGetHive }
+      { path: 'hive/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') }
     ]
   },
 

@@ -51,7 +51,6 @@ export default {
     }
   },
   mounted () {
-    console.log('Get Hive')
     console.log(this.$route.params)
     if (this.$route.params.hiveAccname) {
       this.hiveAccname = this.$route.params.hiveAccname

@@ -20,7 +20,7 @@
             @input="recalcUSD"
             @keyup="recalcUSD"
             label="Amount (sats)"
-            :rules="[ amountSats => 1000 < amountSats && amountSats <= 100000 || 'From 1,000 to 100,000 sats']"
+            :rules="[ amountSats => minInv <= amountSats && amountSats <= maxInv || errorMessage ]"
           >
             <template v-slot:prepend>
               <q-icon name="currency_bitcoin" />
@@ -31,6 +31,7 @@
       <div class="col-6">
         <div class="q-pa-sm q-gutter-sm">
           <q-input
+            readonly
             v-model="amountUSD"
             @input="recalcSATS"
             @keyup="recalcSATS"
@@ -165,8 +166,8 @@ export default {
     return {
       testing: false,
       tallyResponse: '',
-      amounts: ['0.50', '1.00', '2.00', '5.00', '10.00', '15.00', '20.00'],
-      amountLabels: ['$0.50', '$1.00', '$2.00', '$5.00', '$10.00', '$15.00', '$20.00'],
+      amounts: ['1500', '3000', '5000', '7500', '15000', '30000', '50000', '100000'],
+      amountLabels: ['1500', '3000', '5000', '7500', '15000', '30000', '50000', '100000'],
       amountSats: '',
       amountSatsFees: '',
       amountUSD: '',
@@ -187,6 +188,11 @@ export default {
   },
   props: ['prices', 'hiveAccname', 'memo', 'serviceStatus', 'sendHiveTo'],
   computed: {
+    minInv: function () { return this.serviceStatus.minimum_invoice_payment_sats },
+    maxInv: function () { return this.serviceStatus.maximum_invoice_payment_sats },
+    errorMessage: function () {
+      return 'Between ' + this.tidyNumber(this.minInv) + ' and ' + this.tidyNumber(this.maxInv) + ' sats'
+    }
   },
   methods: {
     copySelect (ev) {
@@ -339,19 +345,27 @@ export default {
       })
     },
     buttonClick (index) {
-      this.amountUSD = this.amounts[index]
+      this.amountSats = this.amounts[index]
       this.recalcSATS()
       this.recalcUSD()
     },
     recalcUSD () {
-      this.amountUSD = ((this.amountSats / 1e8) * this.prices.bitcoin.usd).toFixed(2)
-      this.amountUSDFees = ((this.amountSatsFees / 1e8) * this.prices.bitcoin.usd).toFixed(2)
-      this.recalcHive()
+      if (this.prices) {
+        console.log('We have prices...')
+        this.amountUSD = ((this.amountSats / 1e8) * this.prices.bitcoin.usd).toFixed(2)
+        this.amountUSDFees = ((this.amountSatsFees / 1e8) * this.prices.bitcoin.usd).toFixed(2)
+        this.recalcHive()
+      } else {
+        setTimeout(() => {
+          console.log('Waiting for prices...')
+          this.recalcUSD()
+          this.recalcHive()
+        }, 1000)
+      }
     },
     recalcSATS () {
-      this.amountSats = ((this.amountUSD / this.prices.bitcoin.usd) * 1e8).toFixed(0)
       this.amountSatsFees = ((this.amountSats - this.serviceStatus.conv_fee_sats) * (1 - this.serviceStatus.conv_fee_percent)).toFixed(0)
-      this.recalcHive()
+      this.recalcUSD()
     },
     recalcHive () {
       this.amountHIVE = (this.amountUSDFees / this.prices.hive.usd).toFixed(2)
@@ -362,6 +376,29 @@ export default {
       } else {
         this.hiveLabel = 'Hive'
         this.hbdLabel = 'HBD'
+      }
+    },
+    recalcButtons () {
+      this.amountLabels = this.amounts.map(this.buttonText)
+    },
+    buttonText (sats) {
+      return this.tidyNumber(sats)
+    },
+    satsToDollars (sats) {
+      const satsFees = ((sats - this.serviceStatus.conv_fee_sats) * (1 - this.serviceStatus.conv_fee_percent)).toFixed(0)
+      if (this.prices) {
+        return (satsFees / 1e8 * this.prices.bitcoin.usd).toFixed(2)
+      } else {
+        return 1
+      }
+    },
+    tidyNumber (x) {
+      if (x) {
+        const parts = x.toString().split('.')
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        return parts.join('.')
+      } else {
+        return null
       }
     },
     checkInvoiceAsync (paymentHash) {
@@ -390,9 +427,15 @@ export default {
   components: {
   },
   mounted () {
-    this.recalcUSD()
+    // this.recalcUSD()
+    if (this.$route.params.inputSats) {
+      this.amountSats = this.$route.params.inputSats
+      console.log('inside v4vpay.vue ' + this.amountSats)
+    }
+    this.recalcButtons()
   },
   beforeUpdate () {
+    this.recalcButtons()
     this.recalcUSD()
   },
   updated () {

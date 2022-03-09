@@ -51,7 +51,7 @@ export default {
     }
   },
   methods: {
-    getPrices () {
+    async getPrices () {
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
         .then((response) => {
@@ -90,7 +90,7 @@ export default {
         })
       })
     },
-    getServiceStatus (account) {
+    async getServiceStatus (account) {
       this.$hive.api.getAccountsAsync([account])
         .then((response) => {
           this.serviceStatus = JSON.parse(response[0].posting_json_metadata).v4vapp_hiveconfig
@@ -118,6 +118,8 @@ export default {
   components: {
     // hivelight: HiveToLightningVue,
     // lighthive: LightningToHiveVue
+  },
+  beforeCreate () {
   },
   beforeMount () {
     this.setSendHiveTo()

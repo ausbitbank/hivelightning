@@ -39,7 +39,6 @@ export default {
   },
   computed: {
     avatarIRI: function () {
-      console.log(this.usernameSuggestions)
       if (this.vscrollAcc && this.vscrollAcc.length > 2) {
         const re = /^(?=.{3,16}$)[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){2,}([.](?=[a-z][0-9a-z-][0-9a-z-])[a-z]([0-9a-z]|[0-9a-z-](?=[0-9a-z])){1,}){0,}$/
         const validName = this.vscrollAcc.match(re)
