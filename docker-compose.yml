@@ -11,3 +11,4 @@ services:
     restart: on-failure
     ports:
       - 5000:80
+    command: ["nginx", "-g", "daemon off;"]
