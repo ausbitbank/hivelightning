@@ -350,6 +350,7 @@ export default {
       this.recalcUSD()
     },
     recalcUSD () {
+      console.log('Checking prices')
       if (this.prices) {
         console.log('We have prices...')
         this.amountUSD = ((this.amountSats / 1e8) * this.prices.bitcoin.usd).toFixed(2)
@@ -359,7 +360,6 @@ export default {
         setTimeout(() => {
           console.log('Waiting for prices...')
           this.recalcUSD()
-          this.recalcHive()
         }, 1000)
       }
     },
