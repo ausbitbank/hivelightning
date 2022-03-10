@@ -6,7 +6,7 @@
           <swapstatus
             :sendHiveTo="sendHiveTo"
             :serviceStatus="serviceStatus"
-            :status="serviceStatus.closed_get_hive || serviceStatus.closed_get_lnd"
+            :swapStatus="serviceStatus.closed_get_hive || serviceStatus.closed_get_lnd"
           ></swapstatus>
           <p>For help with the app either leave a comment on the Complete Fee Details page below or send a message on <a href="https://t.me/v4vapp_support">Telegram.</a> </p>
           <span><a :href="getHiveLink(serviceStatus.dynamic_fees_url)" target="_blank">Complete Fee Details on Hive</a></span>

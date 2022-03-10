@@ -97,10 +97,10 @@
       class="text-title text-centre invoice-error error">
       {{ invoiceError }}</div>
     <!-- SwapStatusVue component -->
-    <swapstatus
+    <swapstatus v-if="serviceStatus"
       :sendHiveTo="sendHiveTo"
       :serviceStatus="serviceStatus"
-      :status="serviceStatus.closed_get_lnd"
+      :swapStatus="serviceStatus.closed_get_lnd"
     ></swapstatus>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
@@ -208,7 +208,6 @@ export default {
       decodedInvoice: null,
       expiredMinutes: null,
       invoiceError: '',
-      overChargeSats: 1000 * 0.00000001,
       overChargeMultiplier: 1.05 // 15% overcharge, change is returned
     }
   },

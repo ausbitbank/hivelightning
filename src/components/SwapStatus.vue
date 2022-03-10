@@ -3,8 +3,8 @@
     <i class="pi pi-hiveio"></i>
     Using swap site run by <b>@{{ sendHiveTo }}</b>
     <div q-pa-sm v-if="serviceStatus" class="text-caption">Exchange Status:
-      <span v-if="status === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
-      <span v-else-if="status === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
+      <span v-if="swapStatus === false"><q-icon name="circle" color="green" title="Exchange Online" /> Online</span>
+      <span v-else-if="swapStatus === true"><q-icon name="circle" color="red" title="Exchange Offline for maintenance" /> Offline for maintenance</span>
       <q-btn icon="info" color="blue" flat dense size="sm" title="Show full exchange settings">
         <q-popup-proxy>
           <q-card flat class="text-center q-pa-sm">
@@ -25,7 +25,7 @@
 
 export default {
   name: 'SwapStatus',
-  props: ['sendHiveTo', 'serviceStatus', 'status'],
+  props: ['sendHiveTo', 'serviceStatus', 'swapStatus'],
   methods: {
     getHiveLink (authperm) { return 'https://hivel.ink/' + authperm }
   }

@@ -27,7 +27,7 @@
         <swapstatus
           :sendHiveTo="sendHiveTo"
           :serviceStatus="serviceStatus"
-          :status="serviceStatus.closed_get_hive"
+          :swapStatus="serviceStatus.closed_get_hive"
         ></swapstatus>
       </div>
     </div>

@@ -59,9 +59,8 @@ export default {
           if (this.prices.hive_dollar.usd > 1.10) {
             this.prices.hive_dollar.usd = 1.10
           }
-          console.log('Prices fetched from coingecko')
         })
-        .catch(() => { console.log('Failed to load data from coingecko api') })
+        .catch(() => { console.error('Failed to load data from coingecko api') })
     },
     tidyNumber (x) {
       if (x) {
@@ -74,16 +73,12 @@ export default {
     },
     validateApiUrl () {
       // let success = ''
-      console.log(this.apiURLs)
       this.apiURLs.forEach((url) => {
-        console.log('Checking: ' + url)
         this.$axios({
           method: 'GET',
           url: url + '/v1'
         }).then((response) => {
           this.serviceStatus.apiUrl = url
-          console.log('response: ' + response)
-          console.log('final api: ' + this.serviceStatus.apiUrl)
         }).catch((err) => {
           console.log('Failure: ' + url)
           console.log(err)
@@ -99,20 +94,23 @@ export default {
           this.serviceStatus.maximum_invoice_payment_sats = parseFloat(this.serviceStatus.maximum_invoice_payment_sats)
           this.serviceStatus.overChargeSats = this.serviceStatus.conv_fee_sats * 0.00000001
           this.serviceStatus.conv_fee_percent = parseFloat(this.serviceStatus.conv_fee_percent)
-          console.log(this.serviceStatus)
-          console.log(this.serviceStatus.v4v_api_iri)
           if (this.serviceStatus.v4v_api_iri) {
-            console.log(this.apiURLs)
             this.apiURLs.unshift(this.serviceStatus.v4v_api_iri)
-            console.log('URL list: ' + this.apiURLs)
           }
           this.validateApiUrl()
-          console.log(this.serviceStatus)
         }).catch(() => { this.$q.notify('Failed to load service status from Hive account ' + account) })
     },
     setSendHiveTo () {
-      console.log('Write function to set the right sendTo address')
-      this.sendHiveTo = 'hivehydra'
+      // Send To Hive is the Account to which this instance is linked.
+      if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev.')) {
+        this.sendHiveTo = 'hivehydra'
+      } else {
+        this.sendHiveTo = 'v4vapp'
+        // temporary lines to be removed
+        // this.serviceStatus.closed_get_lnd = false
+        // this.serviceStatus.closed_get_hive = false
+      }
+      console.log('Master account: ' + this.sendHiveTo)
     }
   },
   components: {
