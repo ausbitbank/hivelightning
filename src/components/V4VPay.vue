@@ -206,7 +206,7 @@ export default {
     },
     newInvoiceDialog (currency) {
       if ((this.amountSats < this.serviceStatus.minimum_invoice_payment_sats) ||
-      (this.amountSats >= this.serviceStatus.maximum_invoice_payment_sats)) {
+      (this.amountSats > this.serviceStatus.maximum_invoice_payment_sats)) {
         this.$q.notify('Sats must be between 1,000 and 100,000 per swap')
         return
       }
