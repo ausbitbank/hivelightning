@@ -112,7 +112,7 @@ export default {
     },
     setSendHiveTo () {
       console.log('Write function to set the right sendTo address')
-      this.sendHiveTo = 'v4vapp'
+      this.sendHiveTo = 'hivehydra'
     }
   },
   components: {

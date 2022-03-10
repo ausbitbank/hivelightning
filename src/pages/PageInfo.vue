@@ -3,7 +3,12 @@
     <q-card class="my-card">
       <q-card-section>
         <h5>Welcome to the V4V.app Hive Lightning Gateway</h5>
-          <p>For help with the app either leave a comment on the Complete Fee Details page below or send a message on <a href="https://t.me/v4vapp">Telegram.</a> </p>
+          <swapstatus
+            :sendHiveTo="sendHiveTo"
+            :serviceStatus="serviceStatus"
+            :status="serviceStatus.closed_get_hive || serviceStatus.closed_get_lnd"
+          ></swapstatus>
+          <p>For help with the app either leave a comment on the Complete Fee Details page below or send a message on <a href="https://t.me/v4vapp_support">Telegram.</a> </p>
           <span><a :href="getHiveLink(serviceStatus.dynamic_fees_url)" target="_blank">Complete Fee Details on Hive</a></span>
         <h6>Fees:</h6>
         <q-markup-table>
@@ -40,11 +45,15 @@
 </style>
 
 <script>
-// import MainLayout from 'src/layouts/MainLayout.vue'
+
+import SwapStatusVue from 'src/components/SwapStatus.vue'
 
 export default {
   name: 'PageInfo',
   props: ['prices', 'sendHiveTo', 'serviceStatus'],
+  components: {
+    swapstatus: SwapStatusVue
+  },
   computed: {},
   mounted () {
   },

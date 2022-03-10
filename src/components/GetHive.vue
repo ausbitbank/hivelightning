@@ -23,6 +23,13 @@
           v-bind:memo="memo"
         />
       </div>
+      <div class="q-pt-lg">
+        <swapstatus
+          :sendHiveTo="sendHiveTo"
+          :serviceStatus="serviceStatus"
+          :status="serviceStatus.closed_get_hive"
+        ></swapstatus>
+      </div>
     </div>
   </q-card>
 </template>
@@ -33,6 +40,7 @@
 <script>
 import userSearchBoxVue from 'src/components/userSearchBox.vue'
 import V4VPay from 'src/components/V4VPay.vue'
+import SwapStatusVue from 'src/components/SwapStatus.vue'
 
 // import hive from '@hiveio/hive-js'
 export default {
@@ -61,7 +69,8 @@ export default {
   },
   components: {
     usersearch: userSearchBoxVue,
-    v4vpay: V4VPay
+    v4vpay: V4VPay,
+    swapstatus: SwapStatusVue
   }
 }
 </script>

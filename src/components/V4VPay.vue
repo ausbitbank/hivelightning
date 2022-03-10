@@ -78,7 +78,7 @@
     </q-dialog>
     <!-- Hive Buttons -->
     <div class="p-pa-sm">
-      <div class="row">
+      <div class="row" v-if="prices && serviceStatus">
         <div class="col-6">
           <div class="q-pa-sm q-gutter-sm">
             <q-btn
@@ -205,7 +205,8 @@ export default {
         })
     },
     newInvoiceDialog (currency) {
-      if (this.amountSats < 1000 || this.amountSats >= 100000) {
+      if ((this.amountSats < this.serviceStatus.minimum_invoice_payment_sats) ||
+      (this.amountSats >= this.serviceStatus.maximum_invoice_payment_sats)) {
         this.$q.notify('Sats must be between 1,000 and 100,000 per swap')
         return
       }
@@ -360,7 +361,7 @@ export default {
         setTimeout(() => {
           console.log('Waiting for prices...')
           this.recalcUSD()
-        }, 1000)
+        }, 5000)
       }
     },
     recalcSATS () {
@@ -431,6 +432,7 @@ export default {
     if (this.$route.params.inputSats) {
       this.amountSats = this.$route.params.inputSats
       console.log('inside v4vpay.vue ' + this.amountSats)
+      setTimeout(this.recalcHive, 3000)
     }
     this.recalcButtons()
   },
