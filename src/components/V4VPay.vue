@@ -351,9 +351,7 @@ export default {
       this.recalcUSD()
     },
     recalcUSD () {
-      console.log('Checking prices')
       if (this.prices) {
-        console.log('We have prices...')
         this.amountUSD = ((this.amountSats / 1e8) * this.prices.bitcoin.usd).toFixed(2)
         this.amountUSDFees = ((this.amountSatsFees / 1e8) * this.prices.bitcoin.usd).toFixed(2)
         this.recalcHive()
@@ -361,7 +359,7 @@ export default {
         setTimeout(() => {
           console.log('Waiting for prices...')
           this.recalcUSD()
-        }, 5000)
+        }, 1000)
       }
     },
     recalcSATS () {
@@ -431,10 +429,9 @@ export default {
     // this.recalcUSD()
     if (this.$route.params.inputSats) {
       this.amountSats = this.$route.params.inputSats
-      console.log('inside v4vpay.vue ' + this.amountSats)
-      setTimeout(this.recalcHive, 3000)
     }
     this.recalcButtons()
+    this.recalcUSD()
   },
   beforeUpdate () {
     this.recalcButtons()

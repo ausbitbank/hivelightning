@@ -1,6 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <gethive
+      v-if="prices && serviceStatus"
       v-bind:prices="prices"
       :sendHiveTo="sendHiveTo"
       :serviceStatus="serviceStatus"
