@@ -4,7 +4,7 @@
     <usersearch
       :username="hiveAccname"
       @selectUsername="setUsername"
-      label="To account"></usersearch>
+      label="To Hive account"></usersearch>
     <div>
       <div class="q-pa-md">
         <q-input

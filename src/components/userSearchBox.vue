@@ -1,6 +1,6 @@
 <template>
 <div>
-  <div class="row items-center q-pa-md">
+  <div class="row items-top q-pa-md">
     <div class="col-8 q-pr-sm">
       <q-select
         clearable
@@ -25,9 +25,9 @@
             :src="avatarIRI"
             basic
           >
-            <div class="q-pa-none absolute-bottom text-subtitle4 text-center">
-              {{ fullName }}
-            </div>
+          <div class="my-text absolute-bottom text-subtitle2 text-center">
+            {{ fullName }}
+          </div>
           </q-img>
         </q-card>
 
@@ -39,7 +39,10 @@
 <style lang="sass" scoped>
 .my-card
   width: 100%
-  max-width: 250px
+  max-width: 200px
+
+.my-text
+  padding: 1px
 </style>
 
 <script>
