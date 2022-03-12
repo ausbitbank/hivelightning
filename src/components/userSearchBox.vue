@@ -86,7 +86,11 @@ export default {
         if (err) {
           console.error(err)
         }
-        this.fullName = JSON.parse(data[0].posting_json_metadata).profile.name
+        if (data[0] && data[0].posting_json_metadata) {
+          this.fullName = JSON.parse(data[0].posting_json_metadata).profile.name
+        } else {
+          this.fullName = ''
+        }
       })
       this.vscrollAcc = obj
     },
@@ -114,6 +118,7 @@ export default {
     },
     clearInput () {
       this.input = ''
+      this.fullName = ''
       this.usernameSuggestions = []
     }
   }
