@@ -1,7 +1,7 @@
 <template>
 <div>
   <div class="row items-top q-pa-md">
-    <div class="col-8 q-pr-sm">
+    <div class="col-8 q-pr-md">
       <q-select
         clearable
         autocomplete
@@ -18,20 +18,22 @@
         @filter-abort="abortFilterFn"
         @input-value="virtualScroll"
         @input="$emit('selectUsername', input)" />
-      </div>
-      <div class="col-4">
-        <q-card class="my-card">
-          <q-img
-            :src="avatarIRI"
-            basic
+    </div>
+    <div v-if="avatarIRI" class="col-4" >
+      <q-card class="my-card">
+        <q-img
+          :src="avatarIRI"
+          basic
+        >
+        <div
+          v-if="fullName"
+          class="my-text absolute-bottom text-subtitle2 text-center"
           >
-          <div class="my-text absolute-bottom text-subtitle2 text-center">
-            {{ fullName }}
-          </div>
-          </q-img>
-        </q-card>
-
-      </div>
+          {{ fullName }}
+        </div>
+        </q-img>
+      </q-card>
+    </div>
   </div>
 </div>
 </template>
@@ -106,7 +108,6 @@ export default {
       const partialusername = val.toLowerCase()
 
       this.$hive.api.getAccountReputationsAsync(partialusername, 5, (err, data) => {
-        console.log(data)
         if (err) {
           console.error(err)
         } else {
