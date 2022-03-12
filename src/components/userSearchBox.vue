@@ -1,7 +1,7 @@
 <template>
 <div>
   <div class="row items-center q-pa-md">
-    <div class="col-10 q-pr-sm">
+    <div class="col-8 q-pr-sm">
       <q-select
         clearable
         autocomplete
@@ -19,12 +19,29 @@
         @input-value="virtualScroll"
         @input="$emit('selectUsername', input)" />
       </div>
-      <div class="col-2">
-        <q-img :src="avatarIRI" width="64px" height="64px" />
+      <div class="col-4">
+        <q-card class="my-card">
+          <q-img
+            :src="avatarIRI"
+            basic
+          >
+            <div class="q-pa-none absolute-bottom text-subtitle4 text-center">
+              {{ fullName }}
+            </div>
+          </q-img>
+        </q-card>
+
       </div>
   </div>
 </div>
 </template>
+
+<style lang="sass" scoped>
+.my-card
+  width: 100%
+  max-width: 250px
+</style>
+
 <script>
 import badActorList from '@hiveio/hivescript/bad-actors.json'
 export default {
@@ -32,6 +49,7 @@ export default {
   data () {
     return {
       input: this.username,
+      fullName: '',
       usernameSuggestions: [],
       badActors: badActorList,
       vscrollAcc: null
@@ -63,7 +81,13 @@ export default {
       })
     },
     virtualScroll (obj) {
-      console.log(obj)
+      // Sets the value of the selected item
+      this.$hive.api.getAccounts([obj], (err, data) => {
+        if (err) {
+          console.error(err)
+        }
+        this.fullName = JSON.parse(data[0].posting_json_metadata).profile.name
+      })
       this.vscrollAcc = obj
     },
     abortFilterFn () {
@@ -75,6 +99,7 @@ export default {
       const partialusername = val.toLowerCase()
 
       this.$hive.api.getAccountReputationsAsync(partialusername, 5, (err, data) => {
+        console.log(data)
         if (err) {
           console.error(err)
         } else {
