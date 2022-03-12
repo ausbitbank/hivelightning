@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="prices && serviceStatus">
     <!-- Amounts keyboard -->
     <div class="q-pa-md q-gutter-sm">
       <q-btn
@@ -421,6 +421,18 @@ export default {
           reject(err)
         })
       })
+    },
+    autoShowInvoice () {
+      console.log('inside autoShowInvoice')
+      if (this.$route.params) {
+        if (this.$route.params.currency.toUpperCase() === 'HBD') {
+          this.newInvoiceDialog('HBD')
+        }
+        if (this.$route.params.currency.toUpperCase() === 'HIVE') {
+          this.newInvoiceDialog('HIVE')
+        }
+        console.log(this.$route.params)
+      }
     }
   },
   components: {

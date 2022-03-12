@@ -7,11 +7,13 @@ const routes = [
       { path: 'lnd', component: () => import('pages/PageGetLightning.vue') },
       { path: 'hive', component: () => import('pages/PageGetHive.vue') },
       { path: 'info', component: () => import('pages/PageInfo.vue') },
+      { path: '/@:hiveAccname', component: () => import('pages/PageGetHive.vue') },
+      { path: '/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') },
       { path: 'hive/@:hiveAccname', component: () => import('pages/PageGetHive.vue') },
-      { path: 'hive/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') }
+      { path: 'hive/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') },
+      { path: 'hive/get/:currency/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') }
     ]
   },
-
   // Always leave this as last one,
   // but you can also remove it
   {
