@@ -19,7 +19,7 @@
         @input-value="virtualScroll"
         @input="$emit('selectUsername', input)" />
     </div>
-    <div v-if="avatarIRI" class="col-4" >
+    <div class="col-4" >
       <q-card class="my-card">
         <q-img
           :src="avatarIRI"
