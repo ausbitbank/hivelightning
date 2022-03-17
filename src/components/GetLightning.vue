@@ -225,7 +225,7 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hiveBtc = this.prices.hive.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = ((sats + this.serviceStatus.overChargeSats) / hiveBtc) * this.overChargeMultiplier
+        const cost = (0.1 + (sats + this.serviceStatus.overChargeSats) / hiveBtc) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -233,7 +233,7 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hbdUsd = this.prices.hive_dollar.usd
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = (((sats + this.serviceStatus.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
+        const cost = (0.1 + ((sats + this.serviceStatus.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },

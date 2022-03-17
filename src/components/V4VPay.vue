@@ -290,7 +290,6 @@ export default {
           memo += ' HBD'
         }
         const data = {
-          out: false,
           amount: parseInt(this.amountSats),
           memo: memo
         }
@@ -409,7 +408,7 @@ export default {
           headers: headers,
           params: { testing: this.testing }
         }).then((response, err) => {
-          // console.log(response)
+          console.log(response)
           if (response.data.paid) {
             console.log('it was paid!!!!')
             this.paid = true
