@@ -11,7 +11,7 @@ const routes = [
       { path: '/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') },
       { path: 'hive/@:hiveAccname', component: () => import('pages/PageGetHive.vue') },
       { path: 'hive/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') },
-      { path: 'hive/get/:currency/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') }
+      { path: 'hive/get/:getCurrency/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') }
     ]
   },
   // Always leave this as last one,

@@ -47,7 +47,7 @@ export default {
       prices: null,
       sendHiveTo: '',
       serviceStatus: null,
-      apiURLs: ['']
+      apiURLs: []
     }
   },
   methods: {
@@ -74,11 +74,13 @@ export default {
     validateApiUrl () {
       // let success = ''
       this.apiURLs.forEach((url) => {
+        console.log('testing ', url)
         this.$axios({
           method: 'GET',
           url: url + '/v1'
         }).then((response) => {
           this.serviceStatus.apiUrl = url
+          console.log('Using: ' + this.serviceStatus.apiUrl)
         }).catch((err) => {
           console.log('Failure: ' + url)
           console.log(err)

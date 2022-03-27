@@ -225,7 +225,7 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hiveBtc = this.prices.hive.btc
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = ((sats + this.serviceStatus.overChargeSats) / hiveBtc) * this.overChargeMultiplier
+        const cost = (0.1 + (sats + this.serviceStatus.overChargeSats) / hiveBtc) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -233,7 +233,7 @@ export default {
       if (this.prices && this.decodedInvoice) {
         const hbdUsd = this.prices.hive_dollar.usd
         const sats = this.decodedInvoice.satoshis * 0.00000001
-        const cost = (((sats + this.serviceStatus.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
+        const cost = (0.1 + ((sats + this.serviceStatus.overChargeSats) * this.prices.bitcoin.usd) / hbdUsd) * this.overChargeMultiplier
         return (cost).toFixed(1)
       } else { return null }
     },
@@ -330,7 +330,7 @@ export default {
           this.decodedInvoice = null
           return
         }
-        if (this.decodedInvoice.payeeNodeKey === '0396693dee59afd67f178af392990d907d3a9679fa7ce00e806b8e373ff6b70bd8') {
+        if (this.decodedInvoice.payeeNodeKey === '0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668') {
           // This is my NODE can't self pay
           this.invoiceError = 'This Invoice points to V4VApp: invalid invoice'
           this.decodedInvoice = null

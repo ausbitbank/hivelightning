@@ -70,7 +70,7 @@
         </q-card-section>
         <q-card-section>
           <div class="text-center text-bold">Click image to copy invoice code</div>
-          <div class="text-center text-bold">Sending {{ amountSats }} sats</div>
+          <div class="text-center text-bold">Sending {{ amountSats }} sats as {{ hiveLabel }} or {{ hbdLabel}}</div>
           <br/>
           <div @click="copySelect" class="text-small text-body2 overflow" width="100%">{{ lightningInvoice }}</div>
         </q-card-section>
@@ -290,7 +290,6 @@ export default {
           memo += ' HBD'
         }
         const data = {
-          out: false,
           amount: parseInt(this.amountSats),
           memo: memo
         }
@@ -409,7 +408,6 @@ export default {
           headers: headers,
           params: { testing: this.testing }
         }).then((response, err) => {
-          // console.log(response)
           if (response.data.paid) {
             console.log('it was paid!!!!')
             this.paid = true
@@ -423,12 +421,12 @@ export default {
       })
     },
     autoShowInvoice () {
-      console.log('inside autoShowInvoice')
-      if (this.$route.params) {
-        if (this.$route.params.currency.toUpperCase() === 'HBD') {
+      console.log('inside autoShowInvoice, route params:')
+      if (this.$route.params.getCurrency) {
+        if (this.$route.params.getCurrency.toUpperCase() === 'HBD') {
           this.newInvoiceDialog('HBD')
         }
-        if (this.$route.params.currency.toUpperCase() === 'HIVE') {
+        if (this.$route.params.getCurrency.toUpperCase() === 'HIVE') {
           this.newInvoiceDialog('HIVE')
         }
         console.log(this.$route.params)
@@ -444,6 +442,9 @@ export default {
     }
     this.recalcButtons()
     this.recalcUSD()
+    setTimeout(() => {
+      this.autoShowInvoice()
+    }, 4000)
   },
   beforeUpdate () {
     this.recalcButtons()
