@@ -17,6 +17,7 @@
             label="Get Lightning" />
           <q-route-tab name="gethive" icon="bolt" to= "/hive" label="Get Hive" />
           <q-route-tab name="info" icon="info" to="/info" label="Info" />
+          <q-tab v-if="devSite" name="DEVELOPMENT" label="DEVELOPMENT ONLY DO NOT USE"></q-tab>
         </q-tabs>
       </q-toolbar>
     </q-header>
@@ -50,7 +51,8 @@ export default {
       prices: null,
       sendHiveTo: '',
       serviceStatus: null,
-      apiURLs: []
+      apiURLs: [],
+      devSite: false
     }
   },
   methods: {
@@ -109,11 +111,9 @@ export default {
       // Send To Hive is the Account to which this instance is linked.
       if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev.')) {
         this.sendHiveTo = 'hivehydra'
+        this.devSite = true
       } else {
         this.sendHiveTo = 'v4vapp'
-        // temporary lines to be removed
-        // this.serviceStatus.closed_get_lnd = false
-        // this.serviceStatus.closed_get_hive = false
       }
       console.log('Master account: ' + this.sendHiveTo)
     }
