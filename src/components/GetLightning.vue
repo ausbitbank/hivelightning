@@ -208,7 +208,7 @@ export default {
       decodedInvoice: null,
       expiredMinutes: null,
       invoiceError: '',
-      overChargeMultiplier: 1.05 // 15% overcharge, change is returned
+      overChargeMultiplier: 1.10 // 10% overcharge, change is returned
     }
   },
   props: ['prices', 'sendHiveTo', 'serviceStatus'],
