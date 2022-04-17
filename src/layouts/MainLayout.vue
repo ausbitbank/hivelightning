@@ -20,6 +20,7 @@
           <q-tab v-if="devSite" name="DEVELOPMENT" label="DEVELOPMENT ONLY DO NOT USE"></q-tab>
         </q-tabs>
       </q-toolbar>
+      <div v-if="devSite" align="center" class="text-h6"><a href="https://lnd.v4v.app/hive">USE: lnd.v4v.app INSTEAD</a></div>
     </q-header>
     <q-footer v-if="prices" class="text-center">
       <b>Bitcoin:</b> ${{ tidyNumber(prices.bitcoin.usd.toFixed(2)) }}
