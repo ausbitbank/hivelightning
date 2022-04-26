@@ -285,13 +285,14 @@ export default {
           this.qrpopup = false
           throw new Error('Hive Account name or sending value not set')
         }
-        let memo = this.localHiveAccname + ' | ' + this.memo + ' #v4vapp'
+        let memo = this.localHiveAccname + ' | ' + this.memo + ' | #v4vapp'
         if (currency === 'HBD') {
-          memo += ' HBD'
+          memo += ' #HBD'
         }
         const data = {
           amount: parseInt(this.amountSats),
-          memo: memo
+          memo: memo,
+          app_name: 'lnd.v4v.app'
         }
         let url = ''
         url = this.serviceStatus.apiUrl + '/v1/new_invoice'
