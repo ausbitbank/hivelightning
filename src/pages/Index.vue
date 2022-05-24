@@ -12,8 +12,15 @@
           filled
           autogrow
           class="text-center" @enter="checkInvoice()" @change="checkInvoice()"
-        />
+        >
+          <q-btn icon="photo_camera" dense flat @click="turnCameraOn()" title="Take a photo of a lightning invoice QR code using your camera" v-if="$q.platform.is.mobile"/>
+        </q-input>
       </div>
+      <q-dialog v-model="camDialog">
+        <q-card flat bordered>
+          <qrcode-stream  :camera="camera" @decode="onDecode" />
+        </q-card>
+      </q-dialog>
       <div class="text-title text-center">
         Using exchange run by <b>@{{ to }}</b>
         <div v-if="serviceStatus" class="text-caption">Exchange Status:
@@ -122,6 +129,7 @@ a, a:visited, a:hover, a:active {
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 import hive from '@hiveio/hive-js'
+import { QrcodeStream } from 'vue-qrcode-reader'
 export default {
   name: 'PageIndex',
   data () {
@@ -132,9 +140,12 @@ export default {
       overChargeSats: 1000 * 0.00000001,
       overChargeMultiplier: 1.05, // 15% overcharge, change is returned
       to: 'v4vapp',
-      serviceStatus: null
+      serviceStatus: null,
+      camera: 'auto',
+      camDialog: false
     }
   },
+  components: { QrcodeStream },
   computed: {
     invoiceValid: function () {
       if (this.invoice.startsWith('lnbc')) {
@@ -167,6 +178,13 @@ export default {
     }
   },
   methods: {
+    async onDecode (content) {
+      this.invoice = content.toLowerCase()
+      this.turnCameraOff()
+      this.checkInvoice()
+    },
+    turnCameraOn () { this.camera = 'auto'; this.camDialog = true },
+    turnCameraOff () { this.camera = 'off'; this.camDialog = false },
     getPrices () {
       this.prices = null
       this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false')
