@@ -99,11 +99,13 @@
             v-if="$q.platform.is.mobile" />
       </q-input>
     </div>
-      <q-dialog v-model="camDialog">
-        <q-card flat bordered>
-          <qrcode-stream  :camera="camera" @decode="onDecode" />
-        </q-card>
-      </q-dialog>
+    <q-dialog v-model="camDialog">
+      <q-card flat bordered>
+        <qrcodestream
+          :camera="camera"
+          @decode="onDecode" />
+      </q-card>
+    </q-dialog>
     <!-- End of Lightning invoice Text Box -->
     <div
       v-if="invoiceError.length"
@@ -115,7 +117,6 @@
       :serviceStatus="serviceStatus"
       :swapStatus="serviceStatus.closed_get_lnd"
     ></swapstatus>
-    <qrcodestream></qrcodestream>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
       Expires in {{ expiresIn }}</div>
@@ -314,7 +315,7 @@ export default {
     }
   },
   methods: {
-    async onDecode (content) {
+    onDecode (content) {
       this.invoice = content.toLowerCase()
       this.turnCameraOff()
       this.checkInvoice()
