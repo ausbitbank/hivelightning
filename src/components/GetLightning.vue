@@ -89,8 +89,21 @@
         @keyup.esc="clearInvoice"
         @keyup.enter="checkInvoice"
         :style="invoiceStyles"
-      />
+        >
+          <q-btn
+            icon="photo_camera"
+            dense
+            flat
+            @click="turnCameraOn()"
+            title="Take a photo of a lightning invoice QR code using your camera"
+            v-if="$q.platform.is.mobile" />
+      </q-input>
     </div>
+      <q-dialog v-model="camDialog">
+        <q-card flat bordered>
+          <qrcode-stream  :camera="camera" @decode="onDecode" />
+        </q-card>
+      </q-dialog>
     <!-- End of Lightning invoice Text Box -->
     <div
       v-if="invoiceError.length"
@@ -102,6 +115,7 @@
       :serviceStatus="serviceStatus"
       :swapStatus="serviceStatus.closed_get_lnd"
     ></swapstatus>
+    <qrcodestream></qrcodestream>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
       Expires in {{ expiresIn }}</div>
@@ -196,11 +210,13 @@
 import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 import SwapStatusVue from 'src/components/SwapStatus.vue'
+import { QrcodeStream } from 'vue-qrcode-reader'
 
 export default {
   name: 'GetLightning',
   components: {
-    swapstatus: SwapStatusVue
+    swapstatus: SwapStatusVue,
+    qrcodestream: QrcodeStream
   },
   data () {
     return {
@@ -208,7 +224,9 @@ export default {
       decodedInvoice: null,
       expiredMinutes: null,
       invoiceError: '',
-      overChargeMultiplier: 1.10 // 10% overcharge, change is returned
+      overChargeMultiplier: 1.10, // 10% overcharge, change is returned
+      camera: 'auto',
+      camDialog: false
     }
   },
   props: ['prices', 'sendHiveTo', 'serviceStatus'],
@@ -296,6 +314,13 @@ export default {
     }
   },
   methods: {
+    async onDecode (content) {
+      this.invoice = content.toLowerCase()
+      this.turnCameraOff()
+      this.checkInvoice()
+    },
+    turnCameraOn () { this.camera = 'auto'; this.camDialog = true },
+    turnCameraOff () { this.camera = 'off'; this.camDialog = false },
     clearInvoice () {
       this.invoice = ''
       this.invoiceError = ''
