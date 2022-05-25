@@ -461,7 +461,7 @@ export default {
         this.checkInvoice()
       } catch (err) {
         console.log(err)
-        this.invoiceError = 'Not a valid invoice'
+        this.invoiceError = ('Not a valid LNURL Lightning Invoice')
         this.decodedInvoice = null
       }
     },
