@@ -80,7 +80,7 @@
     <div class="q-pa-md" style="max-width: 90%; margin:auto">
       <q-input
         v-model="invoice"
-        label="Lightning network invoice"
+        label="Lightning invoice"
         filled
         autogrow
         class="text-centre"
@@ -91,12 +91,13 @@
         :style="invoiceStyles"
         >
           <q-btn
-            icon="photo_camera"
+            icon-right="photo_camera"
+            class="vertical-middle"
             dense
             flat
             @click="turnCameraOn()"
-            title="Take a photo of a lightning invoice QR code using your camera"
-            v-if="$q.platform.is.mobile" />
+            title="Take a photo of a lightning invoice QR code using your camera" />
+            <!-- v-if="$q.platform.is.mobile" /> -->
       </q-input>
     </div>
     <q-dialog v-model="camDialog">
@@ -212,6 +213,7 @@ import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 import SwapStatusVue from 'src/components/SwapStatus.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
+import { bech32 } from 'bech32'
 
 export default {
   name: 'GetLightning',
@@ -346,6 +348,11 @@ export default {
       if (this.invoice.startsWith('lightning:')) {
         this.invoice = this.invoice.slice(10)
       }
+      if (this.invoice.startsWith('lnurl')) {
+        console.log('LNURL')
+        this.decodeLnUrlPay()
+        return
+      }
       if (this.invoice.startsWith('lnbc')) {
         console.log('Checking invoice: ')
         try {
@@ -370,6 +377,10 @@ export default {
           this.invoiceError = ('This invoice expired  ' + this.expiredMinutes + ' minutes ago')
           // this.$q.notify('This invoice expired  ' + expiredMinutes + ' minutes ago')
           this.decodedInvoice = null
+        } else if (this.decodedInvoice.satoshis === null) {
+          this.invoiceError = ('This invoice has no value, we can not handle this yet')
+          this.decodedInvoice = null
+          // this.$q.notify(this.invoiceError)
         } else if (this.decodedInvoice.satoshis < this.serviceStatus.minimum_invoice_payment_sats) {
           this.invoiceError = ('This invoice too small ' + this.decodedInvoice.satoshis + ' is less than minimum: ' + this.serviceStatus.minimum_invoice_payment_sats)
           this.decodedInvoice = null
@@ -413,6 +424,51 @@ export default {
       const dest = 'https://hivesigner.com/sign/transfer?to=' + this.sendHiveTo + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice + '%20lnd.v4v.app'
       window.open(dest, '_blank')
       this.invoice = ''
+    },
+    async decodeLnUrlPay () {
+      console.log(this.invoice)
+      try {
+        const decodedBech32 = bech32.decode(this.invoice, 1024)
+        const decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
+        const result = await fetch(decodedUrl, { mode: 'no-cors' })
+        const resultJson = await result.json()
+        console.log('-------------------')
+        console.log(resultJson)
+        console.log('-------------------')
+        const amount = prompt(
+          `Choose an amount between ${this.tidyNumber(resultJson.minSendable / 1000)} sats and ${this.tidyNumber(resultJson.maxSendable / 1000)} sats`,
+          resultJson.minSendable / 1000
+        )
+
+        const amountNumber = Number.parseInt(amount) * 1000
+
+        if (Number.isNaN(amountNumber)) {
+          return
+        }
+        // let useSymbol = '?'
+        // const callback = resultJson.callback
+        let callback = resultJson.callback
+        const firstSeparator = resultJson.callback.includes('?') ? '&' : '?'
+        callback = `${callback}${firstSeparator}amount=${amountNumber.toString()}`
+        console.log(callback)
+        const resultCallback = await fetch(callback)
+        const resultCallbackJson = await resultCallback.json()
+        console.log(resultCallbackJson)
+        this.invoice = resultCallbackJson.pr
+        this.checkInvoice()
+      } catch (err) {
+        console.log(err)
+        this.invoiceError = 'Not a valid invoice'
+        this.decodedInvoice = null
+      }
+    },
+    bytesToString (bytes) {
+      return String.fromCharCode.apply(null, bytes)
+    },
+    detectQueryString (url) {
+      // regex pattern for detecting querystring
+      const pattern = /\?.+=.*/g
+      return pattern.test(url)
     }
   },
   mounted () {
