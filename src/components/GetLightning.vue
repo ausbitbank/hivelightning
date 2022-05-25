@@ -350,8 +350,9 @@ export default {
         this.invoice = this.invoice.slice(10)
       }
       if (this.invoice.startsWith('lnurl')) {
-        console.log('LNURL')
-        this.decodeLnUrlPay()
+        console.log(`LNURL invoice: ${this.invoice}`)
+        this.decodeLnUrlPay().then(
+          console.log('Working on decoding LNURL'))
         return
       }
       if (this.invoice.startsWith('lnbc')) {
@@ -433,7 +434,12 @@ export default {
         console.log(decodedBech32)
         const decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
         console.log(decodedUrl)
-        const result = await fetch(decodedUrl)
+        const result = await fetch(decodedUrl, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        console.log(result)
         const resultJson = await result.json()
         console.log('-------------------')
         console.log(resultJson)
@@ -442,14 +448,10 @@ export default {
           `Choose an amount between ${this.tidyNumber(resultJson.minSendable / 1000)} sats and ${this.tidyNumber(resultJson.maxSendable / 1000)} sats`,
           resultJson.minSendable / 1000
         )
-
         const amountNumber = Number.parseInt(amount) * 1000
-
         if (Number.isNaN(amountNumber)) {
           return
         }
-        // let useSymbol = '?'
-        // const callback = resultJson.callback
         let callback = resultJson.callback
         const firstSeparator = resultJson.callback.includes('?') ? '&' : '?'
         callback = `${callback}${firstSeparator}amount=${amountNumber.toString()}`
@@ -458,7 +460,16 @@ export default {
         const resultCallbackJson = await resultCallback.json()
         console.log(resultCallbackJson)
         this.invoice = resultCallbackJson.pr
-        this.checkInvoice()
+        try {
+          this.decodedInvoice = invoice.decode(this.invoice)
+        } catch (err) {
+          console.log(err)
+          this.invoiceError = 'Not a valid invoice'
+          this.decodedInvoice = null
+          return
+        }
+        this.invoiceError = ''
+        // this.checkInvoice()
       } catch (err) {
         console.log(err)
         this.invoiceError = ('Not a valid LNURL Lightning Invoice')
