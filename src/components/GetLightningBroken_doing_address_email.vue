@@ -85,7 +85,7 @@
         autogrow
         class="text-centre"
         debounce="1000"
-        @keyup="handleKeyup"
+        @keyup="checkInvoice"
         @paste.prevent="pasteCheckInvoice"
         @keyup.esc="clearInvoice"
         @keyup.enter="checkInvoice"
@@ -354,8 +354,23 @@ export default {
         this.decodeLnUrlPay()
         return
       }
+      const lAddPattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+      if (lAddPattern.test(this.invoice)) {
+        console.log('LNURL Lightning Address')
+        console.log(this.invoice)
+        try {
+          this.decodeLnUrlPay(true)
+          return
+        } catch (err) {
+          console.error(err)
+        }
+        this.invoiceError = ('Not a valid Lightning Invoice')
+        this.decodedInvoice = null
+        return
+      }
       if (this.invoice.startsWith('lnbc')) {
-        console.log('Checking invoice: ')
+        console.log('Checking invoice:')
+        this.invoiceError = ''
         try {
           this.decodedInvoice = invoice.decode(this.invoice)
         } catch (err) {
@@ -426,30 +441,41 @@ export default {
       window.open(dest, '_blank')
       this.invoice = ''
     },
-    async decodeLnUrlPay () {
+    async decodeLnUrlPay (lAdd) {
       console.log(this.invoice)
       try {
-        const decodedBech32 = bech32.decode(this.invoice, 1024)
-        console.log(decodedBech32)
-        const decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
-        console.log(decodedUrl)
+        let decodedUrl = ''
+        if (lAdd) {
+          console.log('Decode lightning address')
+          const [username, domain] = this.invoice.toLowerCase().split('@')
+          if (domain === undefined) {
+            throw new Error('Invalid Lightning Address')
+          }
+          // Normal LNURL fetch request follows:
+          decodedUrl = `https://${domain}/.well-known/lnurlp/${username}`
+        } else {
+          const decodedBech32 = bech32.decode(this.invoice, 1024)
+          decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
+        }
         const result = await fetch(decodedUrl)
         const resultJson = await result.json()
         console.log('-------------------')
         console.log(resultJson)
+        console.log(resultJson.detail)
         console.log('-------------------')
+        if (resultJson.detail) {
+          console.error(resultJson.detail)
+          throw new Error('Bad response from Lightning Address')
+        }
+        this.invoiceError = ''
         const amount = prompt(
           `Choose an amount between ${this.tidyNumber(resultJson.minSendable / 1000)} sats and ${this.tidyNumber(resultJson.maxSendable / 1000)} sats`,
           resultJson.minSendable / 1000
         )
-
         const amountNumber = Number.parseInt(amount) * 1000
-
         if (Number.isNaN(amountNumber)) {
           return
         }
-        // let useSymbol = '?'
-        // const callback = resultJson.callback
         let callback = resultJson.callback
         const firstSeparator = resultJson.callback.includes('?') ? '&' : '?'
         callback = `${callback}${firstSeparator}amount=${amountNumber.toString()}`
@@ -457,7 +483,8 @@ export default {
         const resultCallback = await fetch(callback)
         const resultCallbackJson = await resultCallback.json()
         console.log(resultCallbackJson)
-        this.invoice = resultCallbackJson.pr
+        this.decodedInvoice = resultCallbackJson.pr
+        this.invoiceError = ''
         this.checkInvoice()
       } catch (err) {
         console.log(err)
