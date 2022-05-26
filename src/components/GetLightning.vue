@@ -434,25 +434,37 @@ export default {
       console.log('url is ' + url)
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
-        console.log(result)
         console.log(result.data)
-        const callbackUrl = this.addAmount(result.data.callback, 1000000)
+        console.log('---------')
+        const amount = this.queryAmount(result.data.minSendable, result.data.maxSendable)
+        const callbackUrl = this.addAmount(result.data.callback, amount)
         console.log(callbackUrl)
         url = apiUrl + '/v1/lnurlp/proxy/callback/'
         const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
         console.log(callBackResult)
-        this.decodedInvoice = callBackResult.data.pr
+        this.invoice = callBackResult.data.pr
+        this.decodedInvoice = invoice.decode(this.invoice)
         this.invoiceError = ''
       } catch (err) {
         console.log(err)
         this.invoiceError = 'Not a valid invoice'
         this.decodedInvoice = null
       }
-      // // const result = await this.$axios({
-      // //   url: url,
-      // //   method: 'POST',
-      // //   data: { anything: this.invoice }
-      // // })
+    },
+    queryAmount (minSendable, maxSendable) {
+      minSendable = minSendable / 1000
+      maxSendable = maxSendable / 1000
+      if (minSendable < this.serviceStatus.minimum_invoice_payment_sats) {
+        minSendable = this.serviceStatus.minimum_invoice_payment_sats
+      }
+      if (maxSendable > this.serviceStatus.maximum_invoice_payment_sats) {
+        maxSendable = this.serviceStatus.maximum_invoice_payment_sats
+      }
+      const amount = prompt(
+        `Choose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+        minSendable * 5
+      )
+      return amount * 1000
     },
     addAmount (url, amount) {
       const firstSeparator = url.includes('?') ? '&' : '?'
