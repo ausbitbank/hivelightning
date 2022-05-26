@@ -214,7 +214,7 @@ import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 import SwapStatusVue from 'src/components/SwapStatus.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import { bech32 } from 'bech32'
+// import { bech32 } from 'bech32'
 
 export default {
   name: 'GetLightning',
@@ -335,7 +335,7 @@ export default {
         this.invoiceError = ''
         this.decodedInvoice = null
       } else {
-        this.checkInvoice()
+        // this.checkInvoice()
       }
       console.log(e)
     },
@@ -429,15 +429,51 @@ export default {
     },
     async decodeLnUrlPay () {
       console.log(this.invoice)
+      const apiUrl = 'http://localhost:1818' // this.serviceStatus.apiUrl
+      let url = apiUrl + '/v1/lnurlp/proxy/'
+      console.log('url is ' + url)
       try {
-        const decodedBech32 = bech32.decode(this.invoice, 1024)
-        console.log(decodedBech32)
-        const decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
-        console.log(decodedUrl)
-        const result = await fetch(decodedUrl, {
+        const result = await this.$axios.post(url, { anything: this.invoice })
+        console.log(result)
+        console.log(result.data)
+        const callbackUrl = this.addAmount(result.data.callback, 1000000)
+        console.log(callbackUrl)
+        url = apiUrl + '/v1/lnurlp/proxy/callback/'
+        const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
+        console.log(callBackResult)
+        this.decodedInvoice = callBackResult.data.pr
+        this.invoiceError = ''
+      } catch (err) {
+        console.log(err)
+        this.invoiceError = 'Not a valid invoice'
+        this.decodedInvoice = null
+      }
+      // // const result = await this.$axios({
+      // //   url: url,
+      // //   method: 'POST',
+      // //   data: { anything: this.invoice }
+      // // })
+    },
+    addAmount (url, amount) {
+      const firstSeparator = url.includes('?') ? '&' : '?'
+      const ans = `${url}${firstSeparator}amount=${amount.toString()}`
+      return ans
+    },
+    async decodeLnUrlPayTemp () {
+      console.log(this.invoice)
+      try {
+        // const decodedBech32 = bech32.decode(this.invoice, 1024)
+        // console.log(decodedBech32)
+        // const decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
+        // console.log(decodedUrl)
+        let url = this.serviceStatus.apiUrl + '/v1/lnurlp/proxy/'
+        console.log('url is ' + url)
+        const result = await fetch(url, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({ anything: this.invoice })
         })
         console.log(result)
         const resultJson = await result.json()
@@ -448,15 +484,25 @@ export default {
           `Choose an amount between ${this.tidyNumber(resultJson.minSendable / 1000)} sats and ${this.tidyNumber(resultJson.maxSendable / 1000)} sats`,
           resultJson.minSendable / 1000
         )
+        const comment = prompt('What do you want to say?')
+        console.log(comment)
         const amountNumber = Number.parseInt(amount) * 1000
         if (Number.isNaN(amountNumber)) {
           return
         }
-        let callback = resultJson.callback
-        const firstSeparator = resultJson.callback.includes('?') ? '&' : '?'
-        callback = `${callback}${firstSeparator}amount=${amountNumber.toString()}`
-        console.log(callback)
-        const resultCallback = await fetch(callback)
+        let callbackUrl = resultJson.callback
+        const firstSeparator = resultJson.callbackUrl.includes('?') ? '&' : '?'
+        callbackUrl = `${callbackUrl}${firstSeparator}amount=${amountNumber.toString()}`
+        console.log(callbackUrl)
+        url = this.serviceStatus.apiUrl + '/v1/lnurlp/proxy/callback/'
+        const resultCallback = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ callbackUrl: callbackUrl })
+        })
+
         const resultCallbackJson = await resultCallback.json()
         console.log(resultCallbackJson)
         this.invoice = resultCallbackJson.pr
