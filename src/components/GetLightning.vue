@@ -429,7 +429,7 @@ export default {
     },
     async decodeLnUrlPay () {
       console.log(this.invoice)
-      const apiUrl = 'http://localhost:1818' // this.serviceStatus.apiUrl
+      const apiUrl = this.serviceStatus.apiUrl
       let url = apiUrl + '/v1/lnurlp/proxy/'
       console.log('url is ' + url)
       try {
