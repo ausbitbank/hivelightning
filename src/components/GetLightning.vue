@@ -458,6 +458,11 @@ export default {
         this.invoice = callBackResult.data.pr
         this.decodedInvoice = invoice.decode(this.invoice)
         this.invoiceError = ''
+        if (this.decodedInvoice.payeeNodeKey === '0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668') {
+          // This is my NODE can't self pay
+          this.clearInvoice('This Invoice points back to V4VApp: invalid invoice')
+          return
+        }
       } catch (err) {
         console.log(err)
         this.clearInvoice('Unable to decode LNURL or Sending cancelled')
