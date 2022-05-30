@@ -327,21 +327,24 @@ export default {
     },
     turnCameraOn () { this.camera = 'auto'; this.camDialog = true },
     turnCameraOff () { this.camera = 'off'; this.camDialog = false },
-    clearInvoice () {
+    clearInvoice (errorMessage) {
       this.invoice = ''
-      this.invoiceError = ''
+      if (errorMessage) {
+        this.invoiceError = errorMessage
+      } else {
+        this.invoiceError = ''
+      }
       this.decodedInvoice = null
+      this.lnurlImage = null
     },
     handleKeyup (e) {
       if (this.invoice.length === 0) {
-        this.invoiceError = ''
-        this.decodedInvoice = null
+        this.clearInvoice()
       } else {
         console.log('key up')
       }
     },
     pasteCheckInvoice (evt) {
-      console.log(evt.clipboardData.getData('text/plain'))
       this.invoice = evt.clipboardData.getData('text/plain')
       this.checkInvoice()
     },
@@ -370,8 +373,7 @@ export default {
           this.decodedInvoice = invoice.decode(this.invoice)
         } catch (err) {
           console.log(err)
-          this.invoiceError = 'Not a valid invoice'
-          this.decodedInvoice = null
+          this.clearInvoice('Not a valid invoice')
           return
         }
         if (this.decodedInvoice.payeeNodeKey === '0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668') {
@@ -380,7 +382,6 @@ export default {
           this.decodedInvoice = null
           return
         }
-        console.log(this.decodedInvoice)
         const dddd = Date.now() / 1000
         const expiredSeconds = dddd - this.decodedInvoice.timeExpireDate
         this.expiredMinutes = parseInt(expiredSeconds / 60)
@@ -425,8 +426,7 @@ export default {
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.sendHiveTo, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
       if (success) {
         this.$q.notify('Payment sent!')
-        this.invoice = ''
-        this.decodedInvoice = null
+        this.clearInvoice()
       }
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
@@ -443,24 +443,16 @@ export default {
       console.log('url is ' + url)
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
-        console.log(result.data)
-        console.log('---------')
         const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
-        console.log(result.data.metadata)
-        const metadata = await JSON.parse(result.data.metadata)
-        console.log(metadata)
         const callbackUrl = await this.addAmount(result.data.callback, amount)
-        console.log(callbackUrl)
         url = apiUrl + '/v1/lnurlp/proxy/callback/'
         const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
-        console.log(callBackResult)
         this.invoice = callBackResult.data.pr
         this.decodedInvoice = invoice.decode(this.invoice)
         this.invoiceError = ''
       } catch (err) {
         console.log(err)
-        this.invoiceError = 'Sending cancelled'
-        this.decodedInvoice = null
+        this.clearInvoice('Unable to decode LNURL or Sending cancelled')
       }
     },
     async queryAmount (metadata, minSendable, maxSendable) {
@@ -480,13 +472,12 @@ export default {
       } catch (error) {
       }
       const amount = prompt(
-        `${message}\n\n\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+        `${message}\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
         minSendable * 5
       )
       if (amount === null) {
         console.log('cancelled')
-        this.invoiceError = 'Cancelled'
-        this.decodedInvoice = null
+        this.clearInvoice('Cancelled')
         throw new Error('User Cancelled')
       }
       return amount * 1000
