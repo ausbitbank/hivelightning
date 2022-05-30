@@ -78,11 +78,11 @@
     </q-card>
     <!-- Lightning invoice Text Box -->
     <div class="q-pa-md" style="max-width: 90%; margin:auto">
+      <img :src=this.lnurlImage />
       <q-input
         v-model="invoice"
         label="Lightning invoice"
         filled
-        autogrow
         class="text-centre"
         debounce="1000"
         @keyup="handleKeyup"
@@ -230,7 +230,9 @@ export default {
       invoiceError: '',
       overChargeMultiplier: 1.10, // 10% overcharge, change is returned
       camera: 'auto',
-      camDialog: false
+      camDialog: false,
+      lAddPattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      lnurlImage: null
     }
   },
   props: ['prices', 'sendHiveTo', 'serviceStatus'],
@@ -335,9 +337,8 @@ export default {
         this.invoiceError = ''
         this.decodedInvoice = null
       } else {
-        // this.checkInvoice()
+        console.log('key up')
       }
-      console.log(e)
     },
     pasteCheckInvoice (evt) {
       console.log(evt.clipboardData.getData('text/plain'))
@@ -353,6 +354,14 @@ export default {
         console.log(`LNURL invoice: ${this.invoice}`)
         this.decodeLnUrlPay().then(
           console.log('Working on decoding LNURL'))
+        return
+      }
+      console.log('lightning address')
+      if (this.lAddPattern.test(this.invoice)) {
+        console.log(`LNURL Lightning Address: ${this.invoice}`)
+        this.decodeLnUrlPay().then(
+          console.log('Working on decoding LNURL')
+        )
         return
       }
       if (this.invoice.startsWith('lnbc')) {
@@ -436,8 +445,11 @@ export default {
         const result = await this.$axios.post(url, { anything: this.invoice })
         console.log(result.data)
         console.log('---------')
-        const amount = this.queryAmount(result.data.minSendable, result.data.maxSendable)
-        const callbackUrl = this.addAmount(result.data.callback, amount)
+        const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
+        console.log(result.data.metadata)
+        const metadata = await JSON.parse(result.data.metadata)
+        console.log(metadata)
+        const callbackUrl = await this.addAmount(result.data.callback, amount)
         console.log(callbackUrl)
         url = apiUrl + '/v1/lnurlp/proxy/callback/'
         const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
@@ -447,11 +459,11 @@ export default {
         this.invoiceError = ''
       } catch (err) {
         console.log(err)
-        this.invoiceError = 'Not a valid invoice'
+        this.invoiceError = 'Sending cancelled'
         this.decodedInvoice = null
       }
     },
-    queryAmount (minSendable, maxSendable) {
+    async queryAmount (metadata, minSendable, maxSendable) {
       minSendable = minSendable / 1000
       maxSendable = maxSendable / 1000
       if (minSendable < this.serviceStatus.minimum_invoice_payment_sats) {
@@ -460,79 +472,51 @@ export default {
       if (maxSendable > this.serviceStatus.maximum_invoice_payment_sats) {
         maxSendable = this.serviceStatus.maximum_invoice_payment_sats
       }
+      let parsedArray = null
+      let message = 'Sending sats to Lightning Address.'
+      try {
+        parsedArray = JSON.parse(metadata)
+        message = await this.parseLnurlMessage(parsedArray)
+      } catch (error) {
+      }
       const amount = prompt(
-        `Choose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+        `${message}\n\n\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
         minSendable * 5
       )
+      if (amount === null) {
+        console.log('cancelled')
+        this.invoiceError = 'Cancelled'
+        this.decodedInvoice = null
+        throw new Error('User Cancelled')
+      }
       return amount * 1000
     },
-    addAmount (url, amount) {
+    async parseLnurlMessage (arr) {
+      const lnurlDetails = await this.arrayToObject(arr)
+      let message = ''
+      if (lnurlDetails['text/long-desc']) {
+        message = lnurlDetails['text/long-desc']
+      } else if (lnurlDetails['text/plain']) {
+        message = lnurlDetails['text/plain']
+      }
+      // At some point we could deal with the image here.
+      if (lnurlDetails['image/png;base64']) {
+        this.lnurlImage = 'data:image/png;base64,' + lnurlDetails['image/png;base64']
+      }
+      return message
+    },
+    async arrayToObject (arr) {
+      const res = {}
+      for (const pair of arr) {
+        const [key, value] = pair
+        res[key] = value
+      }
+      return res
+    },
+    async addAmount (url, amount) {
       const firstSeparator = url.includes('?') ? '&' : '?'
       const ans = `${url}${firstSeparator}amount=${amount.toString()}`
       return ans
-    },
-    async decodeLnUrlPayTemp () {
-      console.log(this.invoice)
-      try {
-        // const decodedBech32 = bech32.decode(this.invoice, 1024)
-        // console.log(decodedBech32)
-        // const decodedUrl = this.bytesToString(bech32.fromWords(decodedBech32.words))
-        // console.log(decodedUrl)
-        let url = this.serviceStatus.apiUrl + '/v1/lnurlp/proxy/'
-        console.log('url is ' + url)
-        const result = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ anything: this.invoice })
-        })
-        console.log(result)
-        const resultJson = await result.json()
-        console.log('-------------------')
-        console.log(resultJson)
-        console.log('-------------------')
-        const amount = prompt(
-          `Choose an amount between ${this.tidyNumber(resultJson.minSendable / 1000)} sats and ${this.tidyNumber(resultJson.maxSendable / 1000)} sats`,
-          resultJson.minSendable / 1000
-        )
-        const comment = prompt('What do you want to say?')
-        console.log(comment)
-        const amountNumber = Number.parseInt(amount) * 1000
-        if (Number.isNaN(amountNumber)) {
-          return
-        }
-        let callbackUrl = resultJson.callback
-        const firstSeparator = resultJson.callbackUrl.includes('?') ? '&' : '?'
-        callbackUrl = `${callbackUrl}${firstSeparator}amount=${amountNumber.toString()}`
-        console.log(callbackUrl)
-        url = this.serviceStatus.apiUrl + '/v1/lnurlp/proxy/callback/'
-        const resultCallback = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ callbackUrl: callbackUrl })
-        })
-
-        const resultCallbackJson = await resultCallback.json()
-        console.log(resultCallbackJson)
-        this.invoice = resultCallbackJson.pr
-        try {
-          this.decodedInvoice = invoice.decode(this.invoice)
-        } catch (err) {
-          console.log(err)
-          this.invoiceError = 'Not a valid invoice'
-          this.decodedInvoice = null
-          return
-        }
-        this.invoiceError = ''
-        // this.checkInvoice()
-      } catch (err) {
-        console.log(err)
-        this.invoiceError = ('Not a valid LNURL Lightning Invoice')
-        this.decodedInvoice = null
-      }
     },
     bytesToString (bytes) {
       return String.fromCharCode.apply(null, bytes)
