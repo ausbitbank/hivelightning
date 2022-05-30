@@ -78,7 +78,12 @@
     </q-card>
     <!-- Lightning invoice Text Box -->
     <div class="q-pa-md" style="max-width: 90%; margin:auto">
-      <img :src=this.lnurlImage />
+      <div class="q-pa-sm" v-if="this.lnurlMessage">
+        {{ this.lnurlMessage }}
+      </div>
+      <div class="q-pa-sm" v-if="this.lnurlImage">
+        <img :src=this.lnurlImage />
+      </div>
       <q-input
         v-model="invoice"
         label="Lightning invoice"
@@ -232,6 +237,7 @@ export default {
       camera: 'auto',
       camDialog: false,
       lAddPattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      lnurlMessage: null,
       lnurlImage: null
     }
   },
@@ -336,6 +342,7 @@ export default {
       }
       this.decodedInvoice = null
       this.lnurlImage = null
+      this.lnurlMessage = null
     },
     handleKeyup (e) {
       if (this.invoice.length === 0) {
@@ -438,6 +445,7 @@ export default {
     },
     async decodeLnUrlPay () {
       console.log(this.invoice)
+      this.lnurlImage = null
       const apiUrl = this.serviceStatus.apiUrl
       let url = apiUrl + '/v1/lnurlp/proxy/'
       console.log('url is ' + url)
@@ -465,14 +473,14 @@ export default {
         maxSendable = this.serviceStatus.maximum_invoice_payment_sats
       }
       let parsedArray = null
-      let message = 'Sending sats to Lightning Address.'
+      this.lnurlMessage = 'Sending sats to Lightning Address.'
       try {
         parsedArray = JSON.parse(metadata)
-        message = await this.parseLnurlMessage(parsedArray)
+        this.lnurlMessage = await this.parseLnurlMessage(parsedArray)
       } catch (error) {
       }
       const amount = prompt(
-        `${message}\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+        `${this.lnurlMessage}\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
         minSendable * 5
       )
       if (amount === null) {
@@ -484,17 +492,17 @@ export default {
     },
     async parseLnurlMessage (arr) {
       const lnurlDetails = await this.arrayToObject(arr)
-      let message = ''
+      this.lnurlMessage = ''
       if (lnurlDetails['text/long-desc']) {
-        message = lnurlDetails['text/long-desc']
+        this.lnurlMessage = lnurlDetails['text/long-desc']
       } else if (lnurlDetails['text/plain']) {
-        message = lnurlDetails['text/plain']
+        this.lnurlMessage = lnurlDetails['text/plain']
       }
       // At some point we could deal with the image here.
       if (lnurlDetails['image/png;base64']) {
         this.lnurlImage = 'data:image/png;base64,' + lnurlDetails['image/png;base64']
       }
-      return message
+      return this.lnurlMessage
     },
     async arrayToObject (arr) {
       const res = {}
