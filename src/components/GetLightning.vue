@@ -236,7 +236,8 @@ export default {
       overChargeMultiplier: 1.10, // 10% overcharge, change is returned
       camera: 'auto',
       camDialog: false,
-      lAddPattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      // lAddPattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      lAddPattern: /\S+@\S+/,
       lnurlMessage: null,
       lnurlImage: null
     }
