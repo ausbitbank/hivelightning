@@ -367,14 +367,6 @@ export default {
           console.log('Working on decoding LNURL'))
         return
       }
-      console.log('lightning address')
-      if (this.lAddPattern.test(this.invoice)) {
-        console.log(`LNURL Lightning Address: ${this.invoice}`)
-        this.decodeLnUrlPay().then(
-          console.log('Working on decoding LNURL')
-        )
-        return
-      }
       if (this.invoice.startsWith('lnbc')) {
         console.log('Checking invoice: ')
         try {
@@ -413,6 +405,14 @@ export default {
           this.invoiceError = ''
           console.log('No LND Invoice errors')
         }
+        return
+      }
+      console.log('Testing for lightning address')
+      if (this.lAddPattern.test(this.invoice)) {
+        console.log(`LNURL Lightning Address: ${this.invoice}`)
+        this.decodeLnUrlPay().then(
+          console.log('Working on decoding LNURL')
+        )
       } else {
         this.invoiceError = ('Not a valid Lightning Invoice')
         this.decodedInvoice = null
