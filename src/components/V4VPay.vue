@@ -69,7 +69,8 @@
           <q-space />
         </q-card-section>
         <q-card-section>
-          <div class="text-center text-bold">Click image to copy invoice code</div>
+          <div class="text-center text-bold">
+            <a :href="prefixLiInvoice">Click image to copy invoice code or click here to pay with a wallet.</a></div>
           <div class="text-center text-bold">Sending {{ amountSats }} sats as {{ hiveLabel }} or {{ hbdLabel}}</div>
           <br/>
           <div @click="copySelect" class="text-small text-body2 overflow" width="100%">{{ lightningInvoice }}</div>
@@ -183,7 +184,8 @@ export default {
       qrCode: new QRCode(),
       progress1: 100,
       progressLabel1: '',
-      paid: false
+      paid: false,
+      webLnInstalled: false
     }
   },
   props: ['prices', 'hiveAccname', 'memo', 'serviceStatus', 'sendHiveTo'],
@@ -192,7 +194,8 @@ export default {
     maxInv: function () { return this.serviceStatus.maximum_invoice_payment_sats },
     errorMessage: function () {
       return 'Between ' + this.tidyNumber(this.minInv) + ' and ' + this.tidyNumber(this.maxInv) + ' sats'
-    }
+    },
+    prefixLiInvoice: function () { return 'lightning:' + this.lightningInvoice }
   },
   methods: {
     copySelect (ev) {
@@ -219,6 +222,7 @@ export default {
       const fetchInvoice = this.getInvoiceAsync(currency)
       Promise.all([fetchInvoice]).then((values, err) => {
         this.getQRCode()
+        this.checkWebln()
         this.qrCode.append(this.$refs.qrcode)
         this.showCountdown()
       }).catch(err => {
@@ -432,6 +436,17 @@ export default {
         }
         console.log(this.$route.params)
       }
+    },
+    async checkWebln () {
+      try {
+        if (this.webLnInstalled) {
+          console.log('Webln is here')
+          // await window.webln.enable()
+        }
+      } catch (error) {
+        // User denied permission or cancelled
+        console.log(error)
+      }
     }
   },
   components: {
@@ -440,6 +455,9 @@ export default {
     // this.recalcUSD()
     if (this.$route.params.inputSats) {
       this.amountSats = this.$route.params.inputSats
+    }
+    if (typeof window.webln !== 'undefined') {
+      this.webLnInstalled = true
     }
     this.recalcButtons()
     this.recalcUSD()
