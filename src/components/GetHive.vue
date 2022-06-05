@@ -10,7 +10,7 @@
         <q-input
         name="Memo"
         v-model="memo"
-        label="Optional PUBLIC Memo to recipient (will be private)"
+        label="Optional PUBLIC Memo to recipient"
         class="text-centre"
         />
       </div>
