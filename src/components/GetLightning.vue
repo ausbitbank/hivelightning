@@ -453,7 +453,12 @@ export default {
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
         const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
-        const callbackUrl = await this.addAmount(result.data.callback, amount)
+        // let comment = ''
+        // if (result.data.commentAllowed) {
+        //   comment = await this.queryComment(result.data.commentAllowed)
+        // }
+        const callbackUrl = await this.addAmountComment(result.data.callback, amount)
+        console.log(callbackUrl)
         url = apiUrl + '/v1/lnurlp/proxy/callback/'
         const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
         this.invoice = callBackResult.data.pr
@@ -496,6 +501,10 @@ export default {
       }
       return amount * 1000
     },
+    // async queryComment (commentAllowed) {
+    //   const comment = prompt('Send a message with your sats')
+    //   return comment
+    // },
     async parseLnurlMessage (arr) {
       const lnurlDetails = await this.arrayToObject(arr)
       this.lnurlMessage = ''
@@ -518,7 +527,7 @@ export default {
       }
       return res
     },
-    async addAmount (url, amount) {
+    async addAmountComment (url, amount, comment) {
       const firstSeparator = url.includes('?') ? '&' : '?'
       const ans = `${url}${firstSeparator}amount=${amount.toString()}`
       return ans
