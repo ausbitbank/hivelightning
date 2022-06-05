@@ -453,11 +453,11 @@ export default {
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
         const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
-        // let comment = ''
-        // if (result.data.commentAllowed) {
-        //   comment = await this.queryComment(result.data.commentAllowed)
-        // }
-        const callbackUrl = await this.addAmountComment(result.data.callback, amount)
+        let comment = ''
+        if (result.data.commentAllowed) {
+          comment = await this.queryComment(result.data.commentAllowed)
+        }
+        const callbackUrl = await this.addAmountComment(result.data.callback, amount, comment)
         console.log(callbackUrl)
         url = apiUrl + '/v1/lnurlp/proxy/callback/'
         const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
@@ -501,10 +501,10 @@ export default {
       }
       return amount * 1000
     },
-    // async queryComment (commentAllowed) {
-    //   const comment = prompt('Send a message with your sats')
-    //   return comment
-    // },
+    async queryComment (commentAllowed) {
+      const comment = prompt('Send a message with your sats')
+      return comment
+    },
     async parseLnurlMessage (arr) {
       const lnurlDetails = await this.arrayToObject(arr)
       this.lnurlMessage = ''
@@ -529,7 +529,10 @@ export default {
     },
     async addAmountComment (url, amount, comment) {
       const firstSeparator = url.includes('?') ? '&' : '?'
-      const ans = `${url}${firstSeparator}amount=${amount.toString()}`
+      const encComment = encodeURIComponent(comment)
+      const ans = `${url}${firstSeparator}amount=${amount.toString()}&comment=${encComment}`
+      console.log('answer with a comment')
+      console.log(ans)
       return ans
     },
     bytesToString (bytes) {
