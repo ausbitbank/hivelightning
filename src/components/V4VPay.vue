@@ -188,7 +188,7 @@ export default {
       webLnInstalled: false
     }
   },
-  props: ['prices', 'hiveAccname', 'memo', 'serviceStatus', 'sendHiveTo'],
+  props: ['prices', 'hiveAccname', 'memo', 'privateMemo', 'serviceStatus', 'sendHiveTo'],
   computed: {
     minInv: function () { return this.serviceStatus.minimum_invoice_payment_sats },
     maxInv: function () { return this.serviceStatus.maximum_invoice_payment_sats },
@@ -289,7 +289,11 @@ export default {
           this.qrpopup = false
           throw new Error('Hive Account name or sending value not set')
         }
+        console.log('private? ' + this.privateMemo)
         let memo = this.localHiveAccname + ' | ' + this.memo + ' | #v4vapp'
+        if (this.privateMemo) {
+          memo += ' #private'
+        }
         if (currency === 'HBD') {
           memo += ' #HBD'
         }
