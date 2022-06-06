@@ -430,7 +430,7 @@ export default {
     },
     async sendKeychain (amount, token) {
       console.log(amount, token)
-      const user = ''
+      const user = null
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.sendHiveTo, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
       if (success) {
         this.$q.notify('Payment sent!')
