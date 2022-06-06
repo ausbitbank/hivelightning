@@ -6,6 +6,7 @@ const routes = [
       { path: '', component: () => import('pages/PageGetLightning.vue') },
       { path: 'lnd', component: () => import('pages/PageGetLightning.vue') },
       { path: 'hive', component: () => import('pages/PageGetHive.vue') },
+      { path: 'address', component: () => import('pages/PageGetAddress.vue') },
       { path: 'info', component: () => import('pages/PageInfo.vue') },
       { path: '/@:hiveAccname', component: () => import('pages/PageGetHive.vue') },
       { path: '/@:hiveAccname/:inputSats/:memo', component: () => import('pages/PageGetHive.vue') },
