@@ -151,22 +151,5 @@ export default {
       }, 4000).then(() => { })
     }
   }
-  // framework: {
-  //   plugins: [
-  //     'loading'
-  //   ],
-  //   config: {
-  //     loading: {}
-  //   }
-  // }
-  // updated () {
-  //   if (this.$route.params.hiveAccname) {
-  //     console.log('updated')
-  //     console.log('hive name ' + this.hiveAccname)
-  //     this.setUsername(this.hiveAccname).then(result => {
-  //       this.qrpopup = true
-  //     }).catch(error => { console.error(error) })
-  //   }
-  // }
 }
 </script>
