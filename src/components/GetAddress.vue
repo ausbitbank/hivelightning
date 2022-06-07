@@ -22,7 +22,9 @@
           size="300px"
         />
         <q-card-section class="items-center q-pb-sm">
-          <div class="container image" id="qr-code" ref="qrcode" style="width: 300px"></div>
+          <a :href="lightningInvoice">
+            <div class="container image" id="qr-code" ref="qrcode" style="width: 300px"></div>
+          </a>
         </q-card-section>
         <q-card-section class="q-pa-md q-gutter-lg">
           <q-btn
