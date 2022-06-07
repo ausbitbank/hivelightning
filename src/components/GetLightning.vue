@@ -2,7 +2,7 @@
   <q-card flat class="text-center q-pa-md">
     <div class="text-h6 q-pb-lg">Hive to Lightning</div>
     <div class="text-title text-center">
-      Convert <i class="pi pi-hiveio"></i> Hive or HBD to <i class="bolt"></i> Lightning
+      Convert <i class="pi pi-hiveio" style="font-size: 1.3em"></i> Hive or HBD to <q-icon style="font-size: 1.3em" name="bolt" /> Lightning
     </div>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />

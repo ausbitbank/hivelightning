@@ -2,14 +2,19 @@
   <q-card flat class="text-center q-pa-md">
     <div class="text-h6 q-pb-lg">Lightning Address</div>
     <div class="text-title text-center">
-      Get a <q-icon name="bolt" /> Lightning Address QR code forwarding to <i class="pi pi-hiveio"></i> Hive
+      <q-icon name="bolt" style="font-size: 1.3em"/> Lightning Address
+      <q-icon name="qr_code_2"></q-icon>
+      to <i class="pi pi-hiveio" style="font-size: 1.3em"></i> Hive
     </div>
     <usersearch
       :username="hiveAccname"
       @selectUsername="setUsername"
       label="To Hive account">
     </usersearch>
-    <q-dialog v-model="qrpopup">
+    <q-dialog
+    v-model="qrpopup"
+    @before-hide="clearData"
+    >
       <q-card rounded class="text-center">
         <q-card-section class="items-center q-pb-sm">
           <div class="container image" id="qr-code" ref="qrcode" style="width: 300px"></div>
@@ -87,7 +92,7 @@ export default {
       this.qrpopup = true
       this.hiveAccname = u
       const apiUrl = this.serviceStatus.apiUrl
-      const url = apiUrl + '/v1/lnurlp/qrcode/text/' + u
+      const url = apiUrl + '/v1/lnurlp/qrcode/text/' + u + '?source=v4v.app'
       console.log(url)
       const response = await this.$axios.get(url)
       this.lightningInvoice = response.data.prefix
@@ -119,14 +124,12 @@ export default {
       console.log(this.qrCode)
       this.qrCode.append(this.$refs.qrcode)
     },
-    tidyNumber (x) {
-      if (x) {
-        const parts = x.toString().split('.')
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-        return parts.join('.')
-      } else {
-        return null
-      }
+    clearData () {
+      this.hiveAccname = ''
+      this.qrpopup = false
+      this.lightningInvoice = ''
+      this.qrCode = new QRCode()
+      this.displayButton = false
     }
   },
   mounted () {
