@@ -97,14 +97,10 @@ export default {
     async setUsername (u) {
       this.qrpopup = true
       this.hiveAccname = u
-      console.log('setUsername called')
       const apiUrl = this.serviceStatus.apiUrl
       const url = apiUrl + '/v1/lnurlp/qrcode/text/' + u + '?source=v4v.app'
-      console.log(url)
       const response = await this.$axios.get(url)
       this.lightningInvoice = response.data.prefix
-      console.log(response)
-      console.log(this.lightningInvoice)
       this.getQRCode()
     },
     getQRCode () {
@@ -128,7 +124,6 @@ export default {
           margin: 0
         }
       })
-      console.log(this.qrCode)
       this.qrCode.append(this.$refs.qrcode)
     },
     clearData () {
@@ -141,7 +136,6 @@ export default {
   },
   mounted () {
     if (this.$route.params.hiveAccname) {
-      console.log('mounted with parameter: ' + this.$route.params.hiveAccname)
       this.qrpopup = true
       this.showLoading = true
       setTimeout(() => {
