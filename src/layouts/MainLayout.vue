@@ -14,9 +14,9 @@
             name="getlightning"
             icon="bolt"
             to="/lnd"
-            label="Get Lightning" />
-          <q-route-tab name="gethive" icon="H" to= "/hive" label="Get Hive" />
-          <q-route-tab name="getaddress" icon="qr_code_2" to= "/address" label="Get Address" />
+            label="Lightning" />
+          <q-route-tab name="gethive" icon="H" to= "/hive" label="Hive" />
+          <q-route-tab name="getaddress" icon="qr_code_2" to= "/address" label="Address" />
           <q-route-tab name="info" icon="info" to="/info" label="Info" />
           <q-tab v-if="devSite" name="DEVELOPMENT" label="DEVELOPMENT ONLY DO NOT USE"></q-tab>
         </q-tabs>

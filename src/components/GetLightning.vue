@@ -444,6 +444,10 @@ export default {
       window.open(dest, '_blank')
       this.invoice = ''
     },
+    setValidInvoice () {
+      this.invoiceError = ''
+      this.decodedInvoice = 'Sending sats to Lightning Address'
+    },
     async decodeLnUrlPay () {
       console.log(this.invoice)
       this.lnurlImage = null
@@ -452,6 +456,7 @@ export default {
       console.log('url is ' + url)
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
+        this.setValidInvoice()
         const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
         let comment = ''
         if (result.data.commentAllowed) {

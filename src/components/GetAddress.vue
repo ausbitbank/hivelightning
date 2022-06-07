@@ -9,11 +9,25 @@
       @selectUsername="setUsername"
       label="To Hive account">
     </usersearch>
-    <q-dialog>
-      v-model="qrpopup"
-      <q-card>
-        <q-card-section>
-          <q-img v-if="laQRcode"></q-img>
+    <q-dialog v-model="qrpopup">
+      <q-card rounded class="text-center">
+        <q-card-section class="items-center q-pb-sm">
+          <div class="container image" id="qr-code" ref="qrcode" style="width: 300px"></div>
+        </q-card-section>
+        <q-card-section class="q-pa-md q-gutter-lg">
+          <q-btn
+            class="glossy"
+            rounded
+            icon="save"
+            size="2"
+            label="png
+            file" @click="downloadQR('png')"></q-btn>
+          <q-btn
+            class="glossy"
+            rounded
+            icon="save"
+            label="svg file"
+            @click="downloadQR('svg')"></q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -37,6 +51,7 @@
 
 <script>
 import userSearchBoxVue from 'src/components/userSearchBox.vue'
+import QRCode from 'qr-code-styling'
 
 export default {
   name: 'GetAddress',
@@ -47,7 +62,9 @@ export default {
     return {
       hiveAccname: '',
       qrpopup: false,
-      laQRcode: null
+      lightningInvoice: '',
+      qrCode: new QRCode(),
+      displayButton: false
     }
   },
   props: ['prices', 'sendHiveTo', 'serviceStatus'],
@@ -62,15 +79,45 @@ export default {
   computed: {
   },
   methods: {
+    downloadQR (filetype) {
+      const fileName = this.hiveAccname + '_ln_v4vapp_address'
+      this.qrCode.download({ name: fileName, extension: filetype })
+    },
     async setUsername (u) {
+      this.qrpopup = true
       this.hiveAccname = u
       const apiUrl = this.serviceStatus.apiUrl
-      const url = apiUrl + '/v1/lnurlp/qrcode/' + u
+      const url = apiUrl + '/v1/lnurlp/qrcode/text/' + u
       console.log(url)
       const response = await this.$axios.get(url)
-      this.qrpopup = true
-      this.laQRcode = response.data
+      this.lightningInvoice = response.data.prefix
       console.log(response)
+      console.log(this.lightningInvoice)
+      this.getQRCode()
+    },
+    getQRCode () {
+      // sets the QR code based on current status
+      this.qrCode = new QRCode({
+        width: 300,
+        height: 300,
+        margin: 1,
+        type: 'svg',
+        data: this.lightningInvoice,
+        image: 'https://images.hive.blog/u/' + this.hiveAccname + '/avatar',
+        dotsOptions: {
+          color: 'active',
+          type: 'rounded'
+        },
+        backgroundOptions: {
+          color: '#e9ebee'
+        },
+        imageOptions: {
+          crossOrigin: 'anonymous',
+          margin: 0
+        }
+      })
+      console.log(this.qrCode)
+      this.qrCode.append(this.$refs.qrcode)
     },
     tidyNumber (x) {
       if (x) {
