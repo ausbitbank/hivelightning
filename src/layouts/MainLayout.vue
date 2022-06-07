@@ -15,7 +15,7 @@
             icon="bolt"
             to="/lnd"
             label="Lightning" />
-          <q-route-tab name="gethive" icon="H" to= "/hive" label="Hive" />
+          <q-route-tab name="gethive" icon="pi-hiveio" to= "/hive" label="Hive" />
           <q-route-tab name="getaddress" icon="qr_code_2" to= "/address" label="Address" />
           <q-route-tab name="info" icon="info" to="/info" label="Info" />
           <q-tab v-if="devSite" name="DEVELOPMENT" label="DEVELOPMENT ONLY DO NOT USE"></q-tab>

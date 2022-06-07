@@ -16,6 +16,11 @@
     @before-hide="clearData"
     >
       <q-card rounded class="text-center">
+        <q-spinner-grid
+          v-if="showLoading"
+          color="primary"
+          size="300px"
+        />
         <q-card-section class="items-center q-pb-sm">
           <div class="container image" id="qr-code" ref="qrcode" style="width: 300px"></div>
         </q-card-section>
@@ -69,18 +74,19 @@ export default {
       qrpopup: false,
       lightningInvoice: '',
       qrCode: new QRCode(),
-      displayButton: false
+      displayButton: false,
+      showLoading: false
     }
   },
   props: ['prices', 'sendHiveTo', 'serviceStatus'],
-  directives: {
-    autofocus: {
-      inserted (el) {
-        el.focus()
-        console.log('input inserted')
-      }
-    }
-  },
+  // directives: {
+  //   autofocus: {
+  //     inserted (el) {
+  //       el.focus()
+  //       console.log('input inserted')
+  //     }
+  //   }
+  // },
   computed: {
   },
   methods: {
@@ -91,6 +97,7 @@ export default {
     async setUsername (u) {
       this.qrpopup = true
       this.hiveAccname = u
+      console.log('setUsername called')
       const apiUrl = this.serviceStatus.apiUrl
       const url = apiUrl + '/v1/lnurlp/qrcode/text/' + u + '?source=v4v.app'
       console.log(url)
@@ -133,6 +140,33 @@ export default {
     }
   },
   mounted () {
+    if (this.$route.params.hiveAccname) {
+      console.log('mounted with parameter: ' + this.$route.params.hiveAccname)
+      this.qrpopup = true
+      this.showLoading = true
+      setTimeout(() => {
+        this.setUsername(this.$route.params.hiveAccname)
+        this.qrpopup = true
+        this.showLoading = false
+      }, 4000).then(() => { })
+    }
   }
+  // framework: {
+  //   plugins: [
+  //     'loading'
+  //   ],
+  //   config: {
+  //     loading: {}
+  //   }
+  // }
+  // updated () {
+  //   if (this.$route.params.hiveAccname) {
+  //     console.log('updated')
+  //     console.log('hive name ' + this.hiveAccname)
+  //     this.setUsername(this.hiveAccname).then(result => {
+  //       this.qrpopup = true
+  //     }).catch(error => { console.error(error) })
+  //   }
+  // }
 }
 </script>
