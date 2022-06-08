@@ -1,9 +1,9 @@
 {
   "name": "hivelightning",
   "version": "0.0.1",
-  "description": "Pay lightning network invoices using Hive",
-  "productName": "HiveLightning",
-  "author": "ausbitbank <ausbitbank@gmail.com>",
+  "description": "Value 4 Value Hive and BTC Lightning",
+  "productName": "V4VApp HiveLightning",
+  "author": "Brian Of London <brian@v4v.app>",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
