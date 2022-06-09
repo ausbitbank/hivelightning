@@ -4,11 +4,6 @@
     <div class="text-title text-center">
       Convert <i class="pi pi-hiveio" style="font-size: 1.3em"></i> Hive or HBD to <q-icon style="font-size: 1.3em" name="bolt" /> Lightning
     </div>
-    <q-btn @click="showAmountComment=true">Show</q-btn>
-    <amountcomment v-if="showAmountComment"
-      :amount="amount"
-      :comment="comment"
-    ></amountcomment>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
       Expires in {{ expiresIn }}</div>
@@ -224,13 +219,11 @@ import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 import SwapStatusVue from 'src/components/SwapStatus.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import AmountComment from 'src/components/AmountComment.vue'
 
 export default {
   name: 'GetLightning',
   components: {
     swapstatus: SwapStatusVue,
-    amountcomment: AmountComment,
     qrcodestream: QrcodeStream
   },
   data () {
@@ -249,7 +242,7 @@ export default {
       showAmountComment: false
     }
   },
-  props: ['prices', 'sendHiveTo', 'serviceStatus', 'amount', 'comment'],
+  props: ['prices', 'sendHiveTo', 'serviceStatus'],
   directives: {
     autofocus: {
       inserted (el) {
@@ -459,20 +452,110 @@ export default {
       console.log(this.invoice)
       this.lnurlImage = null
       const apiUrl = this.serviceStatus.apiUrl
-      let url = apiUrl + '/v1/lnurlp/proxy/'
+      const url = apiUrl + '/v1/lnurlp/proxy/'
       console.log('url is ' + url)
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
         this.setValidInvoice()
-        this.showAmountComment = true
-        const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
-        let comment = ''
+        this.getUserInputLnUrlPay(result)
+        // const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
+        // let comment = ''
+        // if (result.data.commentAllowed) {
+        //   comment = await this.queryComment(result.data.commentAllowed)
+        // }
+        // const callbackUrl = await this.addAmountComment(result.data.callback, amount, comment)
+        // console.log(callbackUrl)
+        // url = apiUrl + '/v1/lnurlp/proxy/callback/'
+        // const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
+        // this.invoice = callBackResult.data.pr
+        // this.decodedInvoice = invoice.decode(this.invoice)
+        // this.invoiceError = ''
+        // if (this.decodedInvoice.payeeNodeKey === '0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668') {
+        //   // This is my NODE can't self pay
+        //   this.clearInvoice('This Invoice points back to V4VApp: invalid invoice')
+        //   return
+        // }
+      } catch (err) {
+        console.log(err)
+        this.clearInvoice('Unable to decode LNURL or Sending cancelled')
+      }
+    },
+    async getUserInputLnUrlPay (result) {
+      // Ask the user for their amount and comment
+      console.log('getUserInput')
+      console.log(result)
+      const metadata = result.data.metadata
+      let minSendable = result.data.minSendable
+      let maxSendable = result.data.maxSendable
+      minSendable = minSendable / 1000
+      maxSendable = maxSendable / 1000
+      if (minSendable < this.serviceStatus.minimum_invoice_payment_sats) {
+        minSendable = this.serviceStatus.minimum_invoice_payment_sats
+      }
+      if (maxSendable > this.serviceStatus.maximum_invoice_payment_sats) {
+        maxSendable = this.serviceStatus.maximum_invoice_payment_sats
+      }
+      let parsedArray = null
+      try {
+        parsedArray = JSON.parse(metadata)
+        this.lnurlMessage = await this.parseLnurlMessage(parsedArray)
+      } catch (error) {
+      }
+      const amountDialog = `${this.lnurlMessage}\n\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`
+      this.$q.dialog({
+        title: 'Amount',
+        transparent: true,
+        message: amountDialog,
+        prompt: {
+          model: '5000',
+          type: 'number' // optional
+        },
+        cancel: true,
+        persistent: true
+      }).onOk(amount => {
+        console.log('>>>> OK, received', amount)
+        amount = amount * 1000
         if (result.data.commentAllowed) {
-          comment = await this.queryComment(result.data.commentAllowed)
+          this.$q.dialog({
+            title: 'Message',
+            transparent: true,
+            message: 'You can send a message with your sats',
+            prompt: {
+              model: '',
+              type: 'text' // optional
+            },
+            cancel: true,
+            persistent: true
+          }).onOk(comment => {
+            console.log('>>>> OK, received', amount, comment)
+            this.finishLnUrlPay(result, amount, comment)
+          }).onCancel(() => {
+            // console.log('>>>> Cancel')
+          }).onDismiss(() => {
+            // console.log('I am triggered on both OK and Cancel')
+          })
+        } else {
+          const comment = null
+          this.finishLnUrlPay(result, amount, comment)
         }
-        const callbackUrl = await this.addAmountComment(result.data.callback, amount, comment)
-        console.log(callbackUrl)
-        url = apiUrl + '/v1/lnurlp/proxy/callback/'
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    async finishLnUrlPay (result, amount, comment) {
+      // Finish it off
+      console.log('finish  ' + result, amount, comment)
+      if (amount === null) {
+        console.log('cancelled')
+        this.clearInvoice('Cancelled')
+        throw new Error('User Cancelled')
+      }
+      const callbackUrl = await this.addAmountComment(result.data.callback, amount, comment)
+      console.log(callbackUrl)
+      const url = this.serviceStatus.apiUrl + '/v1/lnurlp/proxy/callback/'
+      try {
         const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
         this.invoice = callBackResult.data.pr
         this.decodedInvoice = invoice.decode(this.invoice)
@@ -482,8 +565,8 @@ export default {
           this.clearInvoice('This Invoice points back to V4VApp: invalid invoice')
           return
         }
-      } catch (err) {
-        console.log(err)
+      } catch (error) {
+        console.log(error)
         this.clearInvoice('Unable to decode LNURL or Sending cancelled')
       }
     },
@@ -510,7 +593,6 @@ export default {
       if (amount === null) {
         console.log('cancelled')
         this.clearInvoice('Cancelled')
-        throw new Error('User Cancelled')
       }
       return amount * 1000
     },
