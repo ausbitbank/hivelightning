@@ -4,11 +4,6 @@
     <div class="text-title text-center">
       Convert <i class="pi pi-hiveio" style="font-size: 1.3em"></i> Hive or HBD to <q-icon style="font-size: 1.3em" name="bolt" /> Lightning
     </div>
-    <q-btn @click="showAmountComment=true">Show</q-btn>
-    <amountcomment v-if="showAmountComment"
-      :amount="amount"
-      :comment="comment"
-    ></amountcomment>
     <q-card v-if="decodedInvoice && serviceStatus" class="shadow-1 q-pa-sm">
       <div class="q-pa-sm">Valid invoice <b>{{ tidyNumber(decodedInvoice.satoshis) }}</b> sats (<b>${{ tidyNumber(costUsd) }}</b>)<br />
       Expires in {{ expiresIn }}</div>
@@ -224,13 +219,12 @@ import invoice from 'bolt11'
 import { keychain } from '@hiveio/keychain'
 import SwapStatusVue from 'src/components/SwapStatus.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import AmountComment from 'src/components/AmountComment.vue'
+// import { bech32 } from 'bech32'
 
 export default {
   name: 'GetLightning',
   components: {
     swapstatus: SwapStatusVue,
-    amountcomment: AmountComment,
     qrcodestream: QrcodeStream
   },
   data () {
@@ -245,11 +239,10 @@ export default {
       // lAddPattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
       lAddPattern: /\S+@\S+/,
       lnurlMessage: null,
-      lnurlImage: null,
-      showAmountComment: false
+      lnurlImage: null
     }
   },
-  props: ['prices', 'sendHiveTo', 'serviceStatus', 'amount', 'comment'],
+  props: ['prices', 'sendHiveTo', 'serviceStatus'],
   directives: {
     autofocus: {
       inserted (el) {
@@ -341,7 +334,7 @@ export default {
     },
     turnCameraOn () { this.camera = 'auto'; this.camDialog = true },
     turnCameraOff () { this.camera = 'off'; this.camDialog = false },
-    clearInvoice (errorMessage) {
+    clearInvoice(errorMessage) {
       this.invoice = ''
       if (errorMessage) {
         this.invoiceError = errorMessage
@@ -352,18 +345,18 @@ export default {
       this.lnurlImage = null
       this.lnurlMessage = null
     },
-    handleKeyup (e) {
+    handleKeyup(e) {
       if (this.invoice.length === 0) {
         this.clearInvoice()
       } else {
         console.log('key up')
       }
     },
-    pasteCheckInvoice (evt) {
+    pasteCheckInvoice(evt) {
       this.invoice = evt.clipboardData.getData('text/plain')
       this.checkInvoice()
     },
-    checkInvoice () {
+    checkInvoice() {
       this.invoice = this.invoice.toLowerCase()
       if (this.invoice.startsWith('lightning:')) {
         this.invoice = this.invoice.slice(10)
@@ -426,7 +419,7 @@ export default {
         // this.$q.notify(this.invoiceError)
       }
     },
-    tidyNumber (x) {
+    tidyNumber(x) {
       if (x) {
         const parts = x.toString().split('.')
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -435,7 +428,7 @@ export default {
         return null
       }
     },
-    async sendKeychain (amount, token) {
+    async sendKeychain(amount, token) {
       console.log(amount, token)
       const user = null
       const { success, msg, cancel, notInstalled, notActive } = await keychain(window, 'requestTransfer', user, this.sendHiveTo, parseFloat(amount).toFixed(3), this.invoice + ' lnd.v4v.app', token)
@@ -446,16 +439,16 @@ export default {
       if (cancel) { this.$q.notify('Cancelled by user') }
       if (!cancel) { if (notActive) { this.$q.notify('Please allow keychain to access this website') } else if (notInstalled) { this.$q.notify('Keychain not available') } else { console.info(msg) } }
     },
-    sendHivesigner (amount, token) {
+    sendHivesigner(amount, token) {
       const dest = 'https://hivesigner.com/sign/transfer?to=' + this.sendHiveTo + '&from=&amount=' + amount + '%20' + token + '&memo=' + this.invoice + '%20lnd.v4v.app'
       window.open(dest, '_blank')
       this.invoice = ''
     },
-    setValidInvoice () {
+    setValidInvoice() {
       this.invoiceError = ''
       this.decodedInvoice = 'Sending sats to Lightning Address'
     },
-    async decodeLnUrlPay () {
+    async decodeLnUrlPay() {
       console.log(this.invoice)
       this.lnurlImage = null
       const apiUrl = this.serviceStatus.apiUrl
@@ -464,7 +457,6 @@ export default {
       try {
         const result = await this.$axios.post(url, { anything: this.invoice })
         this.setValidInvoice()
-        this.showAmountComment = true
         const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
         let comment = ''
         if (result.data.commentAllowed) {
@@ -487,7 +479,7 @@ export default {
         this.clearInvoice('Unable to decode LNURL or Sending cancelled')
       }
     },
-    async queryAmount (metadata, minSendable, maxSendable) {
+    async queryAmount(metadata, minSendable, maxSendable) {
       minSendable = minSendable / 1000
       maxSendable = maxSendable / 1000
       if (minSendable < this.serviceStatus.minimum_invoice_payment_sats) {
@@ -503,16 +495,39 @@ export default {
         this.lnurlMessage = await this.parseLnurlMessage(parsedArray)
       } catch (error) {
       }
-      const amount = prompt(
-        `${this.lnurlMessage}\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
-        minSendable * 5
-      )
-      if (amount === null) {
-        console.log('cancelled')
-        this.clearInvoice('Cancelled')
-        throw new Error('User Cancelled')
-      }
-      return amount * 1000
+      // const amount = await prompt('Amount to Send',
+      //   `${this.lnurlMessage}\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+      //   minSendable * 5
+      // )
+      const dResponse = this.$q.dialog({
+        title: this.lnurlMessage,
+        message: `Choose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+        prompt: {
+          model: minSendable * 5,
+          type: 'number' // optional
+        },
+        cancel: true,
+        persistent: true
+      })
+      console.log(dResponse)
+      // this.$q.dialog({
+      //   title: this.lnurlMessage,
+      //   message: `Choose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
+      //   prompt: {
+      //     model: minSendable * 5,
+      //     type: 'number' // optional
+      //   },
+      //   cancel: true,
+      //   persistent: true
+      // }).onOk(amount => {
+      //   console.log('>>>> OK, received', amount)
+      //   return amount * 1000
+      // }).onCancel(() => {
+      //   console.log('>>>> Cancel')
+      //   throw new Error('User Cancelled')
+      // }).onDismiss(() => {
+      //   console.log('I am triggered on both OK and Cancel')
+      // })
     },
     async queryComment (commentAllowed) {
       const comment = prompt('Send a message with your sats')
@@ -543,7 +558,8 @@ export default {
     async addAmountComment (url, amount, comment) {
       const firstSeparator = url.includes('?') ? '&' : '?'
       const encComment = encodeURIComponent(comment)
-      const ans = `${url}${firstSeparator}amount=${amount.toString()}&comment=${encComment}`
+      console.log(amount + ' <----- amount')
+      const ans = `${url}${firstSeparator}amount=${amount}&comment=${encComment}`
       console.log('answer with a comment')
       console.log(ans)
       return ans
@@ -555,10 +571,47 @@ export default {
       // regex pattern for detecting querystring
       const pattern = /\?.+=.*/g
       return pattern.test(url)
+    },
+    async prompt (title, message, filled) {
+      this.$q.dialog({
+        title: title,
+        message: message,
+        prompt: {
+          model: filled,
+          type: 'number' // optional
+        },
+        cancel: true,
+        persistent: true
+      }).onOk(data => {
+        console.log('>>>> OK, received', data)
+        return data
+      }).onCancel(() => {
+        console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        console.log('I am triggered on both OK and Cancel')
+      })
     }
   },
   mounted () {
     if (this.$route.query.invoice) { this.invoice = this.$route.query.invoice; this.checkInvoice() }
   }
 }
+
+async function alert () {
+  return new Promise(
+      this.$q.dialog({
+        title: 'Alert',
+        message: 'Some message'
+      }).onOk(() => {
+        // console.log('OK')
+        resolve('OK')
+      }).onCancel(() => {
+        // console.log('Cancel')
+        resolve('Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+        resolve('Dismiss')
+      })
+  )
+    } 
 </script>

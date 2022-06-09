@@ -68,9 +68,19 @@
           </div>
           <q-space />
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="text-center q-pa-sm" v-if="webLnInstalled">
+          <q-btn
+            class="glossy"
+            rounded
+            icon="bolt"
+            size="2"
+            label="Pay Now"
+            @click="payInvoice()"></q-btn>
+        </q-card-section>
+        <q-card-section class="q-pt-xs">
           <div class="text-center text-bold">
-            <a :href="prefixLiInvoice">Click image to copy invoice code or click here to pay with a wallet.</a></div>
+            <a :href="prefixLiInvoice">Click image to copy invoice code or click
+            here to pay with a wallet.</a></div>
           <div class="text-center text-bold">Sending {{ amountSats }} sats as {{ hiveLabel }} or {{ hbdLabel}}</div>
           <br/>
           <div @click="copySelect" class="text-small text-body2 overflow" width="100%">{{ lightningInvoice }}</div>
@@ -198,6 +208,20 @@ export default {
     prefixLiInvoice: function () { return 'lightning:' + this.lightningInvoice }
   },
   methods: {
+    async payInvoice () {
+      if (typeof window.webln === 'undefined') {
+        return alert('No WebLN available.')
+      }
+      try {
+        await window.webln.enable()
+        const result = await window.webln.sendPayment(this.lightningInvoice)
+        console.log(result)
+        alert(result)
+      } catch (error) {
+        console.log(error)
+        alert('Payment was cancelled. (' + error + ')')
+      }
+    },
     copySelect (ev) {
       copyToClipboard(this.lightningInvoice)
         .then(() => {
