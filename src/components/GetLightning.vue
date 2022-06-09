@@ -557,36 +557,6 @@ export default {
         this.clearInvoice('Unable to decode LNURL or Sending cancelled')
       }
     },
-    async queryAmount (metadata, minSendable, maxSendable) {
-      minSendable = minSendable / 1000
-      maxSendable = maxSendable / 1000
-      if (minSendable < this.serviceStatus.minimum_invoice_payment_sats) {
-        minSendable = this.serviceStatus.minimum_invoice_payment_sats
-      }
-      if (maxSendable > this.serviceStatus.maximum_invoice_payment_sats) {
-        maxSendable = this.serviceStatus.maximum_invoice_payment_sats
-      }
-      let parsedArray = null
-      this.lnurlMessage = 'Sending sats to Lightning Address.'
-      try {
-        parsedArray = JSON.parse(metadata)
-        this.lnurlMessage = await this.parseLnurlMessage(parsedArray)
-      } catch (error) {
-      }
-      const amount = prompt(
-        `${this.lnurlMessage}\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`,
-        minSendable * 5
-      )
-      if (amount === null) {
-        console.log('cancelled')
-        this.clearInvoice('Cancelled')
-      }
-      return amount * 1000
-    },
-    async queryComment (commentAllowed) {
-      const comment = prompt('Send a message with your sats')
-      return comment
-    },
     async parseLnurlMessage (arr) {
       const lnurlDetails = await this.arrayToObject(arr)
       this.lnurlMessage = ''
