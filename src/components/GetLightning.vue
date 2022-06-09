@@ -458,23 +458,6 @@ export default {
         const result = await this.$axios.post(url, { anything: this.invoice })
         this.setValidInvoice()
         this.getUserInputLnUrlPay(result)
-        // const amount = await this.queryAmount(result.data.metadata, result.data.minSendable, result.data.maxSendable)
-        // let comment = ''
-        // if (result.data.commentAllowed) {
-        //   comment = await this.queryComment(result.data.commentAllowed)
-        // }
-        // const callbackUrl = await this.addAmountComment(result.data.callback, amount, comment)
-        // console.log(callbackUrl)
-        // url = apiUrl + '/v1/lnurlp/proxy/callback/'
-        // const callBackResult = await this.$axios.get(url, { params: { callbackUrl: callbackUrl } })
-        // this.invoice = callBackResult.data.pr
-        // this.decodedInvoice = invoice.decode(this.invoice)
-        // this.invoiceError = ''
-        // if (this.decodedInvoice.payeeNodeKey === '0266ad2656c7a19a219d37e82b280046660f4d7f3ae0c00b64a1629de4ea567668') {
-        //   // This is my NODE can't self pay
-        //   this.clearInvoice('This Invoice points back to V4VApp: invalid invoice')
-        //   return
-        // }
       } catch (err) {
         console.log(err)
         this.clearInvoice('Unable to decode LNURL or Sending cancelled')
@@ -530,7 +513,9 @@ export default {
             console.log('>>>> OK, received', amount, comment)
             this.finishLnUrlPay(result, amount, comment)
           }).onCancel(() => {
-            // console.log('>>>> Cancel')
+            console.log('cancelled')
+            this.clearInvoice('Cancelled')
+            throw new Error('User Cancelled')
           }).onDismiss(() => {
             // console.log('I am triggered on both OK and Cancel')
           })
@@ -539,7 +524,9 @@ export default {
           this.finishLnUrlPay(result, amount, comment)
         }
       }).onCancel(() => {
-        // console.log('>>>> Cancel')
+        console.log('cancelled')
+        this.clearInvoice('Cancelled')
+        throw new Error('User Cancelled')
       }).onDismiss(() => {
         // console.log('I am triggered on both OK and Cancel')
       })
