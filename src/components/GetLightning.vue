@@ -487,7 +487,7 @@ export default {
       const amountDialog = `${this.lnurlMessage}\n\nChoose an amount between ${this.tidyNumber(minSendable)} sats and ${this.tidyNumber(maxSendable)} sats`
       this.$q.dialog({
         title: 'Amount',
-        transparent: true,
+        position: 'top',
         message: amountDialog,
         prompt: {
           model: '5000',
@@ -501,7 +501,7 @@ export default {
         if (result.data.commentAllowed) {
           this.$q.dialog({
             title: 'Message',
-            transparent: true,
+            position: 'top',
             message: 'You can send a message with your sats',
             prompt: {
               model: '',
