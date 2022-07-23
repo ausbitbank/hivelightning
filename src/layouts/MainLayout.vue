@@ -56,7 +56,8 @@ export default {
   methods: {
     async getPrices () {
       this.prices = null
-      this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd')
+      // this.$axios.get('https://api.coingecko.com/api/v3/simple/price?ids=hive%2Chive_dollar,bitcoin&vs_currencies=btc,usd')
+      this.$axios.get('https://api.v4v.app/v1/cryptoprices/')
         .then((response) => {
           this.prices = response.data
           if (this.prices.hive_dollar.usd > 1.10) {
