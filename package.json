@@ -1,9 +1,9 @@
 {
   "name": "hivelightning",
   "version": "0.0.1",
-  "description": "Pay lightning network invoices using Hive",
-  "productName": "HiveLightning",
-  "author": "ausbitbank <ausbitbank@gmail.com>",
+  "description": "Value 4 Value Hive and BTC Lightning",
+  "productName": "V4VApp HiveLightning",
+  "author": "Brian Of London <brian@v4v.app>",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
@@ -11,13 +11,17 @@
   },
   "dependencies": {
     "@hiveio/hive-js": "^2.0.4",
+    "@hiveio/hivescript": "^1.2.8",
     "@hiveio/keychain": "^1.0.4",
     "@quasar/cli": "^1.2.2",
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
+    "bech32": "^2.0.0",
     "bolt11": "^1.3.2",
     "core-js": "^3.6.5",
-    "quasar": "^1.0.0"
+    "qr-code-styling": "^1.6.0-rc.1",
+    "quasar": "^1.0.0",
+    "vue-qrcode-reader": "^3.1.0"
   },
   "devDependencies": {
     "@quasar/app": "^2.0.0",

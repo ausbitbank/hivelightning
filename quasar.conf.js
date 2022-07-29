@@ -20,7 +20,8 @@ module.exports = function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v1.quasar.dev/quasar-cli/boot-files
     boot: [
-      'axios'
+      'axios',
+      'hivejs'
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -37,8 +38,7 @@ module.exports = function (/* ctx */) {
       // 'themify',
       // 'line-awesome',
       // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
-
-      'roboto-font', // optional, you are not bound to it
+      // 'roboto-font', // optional, you are not bound to it
       'material-icons' // optional, you are not bound to it
     ],
 
@@ -66,7 +66,6 @@ module.exports = function (/* ctx */) {
       // to the underlying Webpack
       // Added to make vs-code work
       devtool: 'source-map',
-
 
       // https://v1.quasar.dev/quasar-cli/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
@@ -103,7 +102,9 @@ module.exports = function (/* ctx */) {
 
       // Quasar plugins
       plugins: [
-        'Notify'
+        'Notify',
+        'Dialog',
+        'Meta'
       ]
     },
 
