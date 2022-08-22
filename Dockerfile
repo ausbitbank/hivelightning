@@ -4,6 +4,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN yarn global add @quasar/cli
 COPY . .
+# COPY public/ .
+# COPY src/ .
+# COPY quasar.conf.js ./
+# COPY jsconfig.json ./
+# COPY babel.config.js ./
+# COPY .postcssrc.js ./
+# COPY .editorconfig ./
 
 # build stage
 FROM develop-stage as build-stage
