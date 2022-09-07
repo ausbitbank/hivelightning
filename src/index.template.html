@@ -2,17 +2,22 @@
 <html>
   <head>
     <title><%= productName %></title>
+    <link rel="stylesheet" href="podcastfont/css/PodcastFont.css" />
     <meta charset="utf-8">
     <meta name="description" content="<%= productDescription %>">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>">
+    <meta name="lightning" content="brianoflondon@v4v.app">
 
-    <link rel="icon" type="image/png" sizes="128x128" href="icons/favicon-128x128.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/favicon-512x512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/favicon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
     <link rel="icon" type="image/ico" href="favicon.ico">
+    <link rel="preconnect" href="https://api.v4v.app">
+    <link rel="dns-prefetch" href="https://api.hive.blog">
+    <link rel="dns-prefetch" href="https://images.hive.blog">
   </head>
   <body>
     <!-- DO NOT touch the following DIV -->

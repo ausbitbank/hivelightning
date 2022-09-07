@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+
+  v4v-quasar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: v4v-quasar
+
+    restart: on-failure
+    ports:
+      - 5000:80
+    command: ["nginx", "-g", "daemon off;"]
