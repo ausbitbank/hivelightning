@@ -10,10 +10,11 @@
           align="justify"
           narrow-indicator
         >
-          <q-route-tab name="getlightning" icon="bolt" to="/lnd" label="Lightning" />
+          <q-route-tab name="getlightning" icon="bolt" to="/lnd" label="LTN" />
           <q-route-tab name="gethive" icon="img:hivewhite.svg" to= "/hive" label="Hive" />
-          <q-route-tab name="getaddress" icon="qr_code_2" to= "/address" label="Address" />
+          <q-route-tab name="getaddress" icon="qr_code_2" to= "/address" label="Addr" />
           <q-route-tab name="info" icon="info" to="/info" label="Info" />
+          <q-route-tab name="swap" icon="img:simpleswap_logo.svg" to="/swap" label="Swap" />
           <q-tab v-if="devSite" name="DEVELOPMENT" label="DEVELOPMENT ONLY DO NOT USE"></q-tab>
         </q-tabs>
       </q-toolbar>
@@ -24,9 +25,7 @@
       <b>Hive:</b> ${{ prices.hive.usd.toFixed(2) }}
       <b>Hive Dollars:</b> ${{ prices.hive_dollar.usd.toFixed(2) }}
       <q-btn flat dense @click="$q.dark.toggle()" :color="$q.dark.isActive ? 'black' : 'white'" :title="$q.dark.isActive ? 'Change to light mode':'Change to dark mode'" :icon="$q.dark.isActive ? 'dark_mode':'light_mode'" size="sm" />
-      <p>
-        Larger swaps via Changely <a href="https://hive.ausbit.dev/exchange?from=hive&to=btc" target="_blank">Hive to BTC</a>
-        or <a href="https://hive.ausbit.dev/exchange?from=btc&to=hive" target="_blank">BTC to Hive</a>.</p>
+        <p>Larger swaps via <a href="/swap">SimpleSwap or Blocktrades</a>.</p>
     </q-footer>
     <q-page-container>
       <router-view
